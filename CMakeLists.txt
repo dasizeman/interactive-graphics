@@ -5,7 +5,7 @@ set(CMAKE_CXX_EXTENSIONS OFF) #...without compiler extensions like gnu++11
 
 project (ICG)
 
-set ( PROJECT_DIR A1 )
+
 
 find_package (OpenGL REQUIRED)
 find_package (GLUT REQUIRED)

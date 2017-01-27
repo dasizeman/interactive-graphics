@@ -11,7 +11,6 @@ void m_glewInitAndVersion(void);  //pre-implementation declaration (could do in 
 void close(void);
 
 //Mesh 0
-GLuint positionBuffer, colorBuffer;
 GLuint singleColorProgram, variableColorProgram;
 GLuint singleColorVAO, variableColorVAO;
 const int NumVertices = 7;
@@ -26,6 +25,8 @@ std::vector<vec2> points = {
     vec2( 0.5, 0.25),
     vec2( 0.5, 0.75)
 };
+
+std::vector<vec2> circlePts;
 
 
 // RGBA colors
@@ -75,48 +76,58 @@ init()
 {
 
     // Generate circle points
-    std::vector<vec2> circlePts = generateCirclePoints(vec2(-0.25,0), 0.25);
+    circlePts = generateCirclePoints(vec2(-0.25,0), 0.25);
     points.insert(points.end(), circlePts.begin(), circlePts.end());
 
     // Generate circle colors
-    std::vector<vec4> circleColors = generateColors(circlePts.size()+7);
-    for (int i = 0; i < circleColors.size(); i++)
-        std::cout << circleColors[i].x << "," << circleColors[i].y;
+    std::vector<vec4> circleColors = generateColors(circlePts.size());
 
-
-    // Create and initialize a buffer object
-    glGenBuffers( 1, &positionBuffer );
-    glGenBuffers( 1, &colorBuffer );
-
-    // Copy the vertex position data
-    glBindBuffer( GL_ARRAY_BUFFER, positionBuffer );
-    glBufferData( GL_ARRAY_BUFFER, points.size()*sizeof(vec2), &points[0], GL_STATIC_DRAW );
-
-    // Copy the vertex color data
-    glBindBuffer( GL_ARRAY_BUFFER, colorBuffer );
-    glBufferData( GL_ARRAY_BUFFER, circleColors.size()*sizeof(vec4), &circleColors[0], GL_STATIC_DRAW );
-
-    // Load shaders and use the resulting shader program
+    // Load shaders
     singleColorProgram = InitShader( "a1.vert", "a1_uniform.frag" );
     variableColorProgram = InitShader( "a1_colorpassthrough.vert", "a1_variable.frag");
 
-    // set up vertex arrays
-    GLuint vPosition = glGetAttribLocation( singleColorProgram, "vPosition" );
+
+    // ----Single color VAO setup-----
+    // Generate a VAO
+    glGenVertexArrays( 1, &singleColorVAO );
+    glBindVertexArray( singleColorVAO );
+
+    // Make a buffer for the vertices
+    GLuint singleColorPointBuffer;
+    glGenBuffers( 1, &singleColorPointBuffer );
+
+    // Copy the vertex position data
+    glBindBuffer( GL_ARRAY_BUFFER, singleColorPointBuffer );
+    glBufferData( GL_ARRAY_BUFFER, points.size()*sizeof(vec2), &points[0], GL_STATIC_DRAW );
+
+    // Tell OpenGL how to read the vertex data
+    GLuint vPositionSingleColor = glGetAttribLocation( singleColorProgram, "vPosition" );
+    glVertexAttribPointer( vPositionSingleColor, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+    glEnableVertexAttribArray( vPositionSingleColor );
+
+    // -----Variable color VAO setup-----
+    glGenVertexArrays( 1, &variableColorVAO );
+    glBindVertexArray( variableColorVAO );
+    
+    // Copy the vertex position data
+    GLuint variableColorPointBuffer;
+    glGenBuffers( 1, &variableColorPointBuffer);
+
+    glBindBuffer( GL_ARRAY_BUFFER, variableColorPointBuffer );
+    glBufferData( GL_ARRAY_BUFFER, circlePts.size()*sizeof(vec2), &circlePts[0], GL_STATIC_DRAW);
+    GLuint vPositionVariableColor = glGetAttribLocation( variableColorProgram, "vPosition" );
+    glVertexAttribPointer( vPositionSingleColor, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+    glEnableVertexAttribArray( vPositionVariableColor );
+
+    // Copy the vertex color data
+    GLuint variableColorColorBuffer;
+    glGenBuffers( 1, &variableColorColorBuffer );
+
+    glBindBuffer( GL_ARRAY_BUFFER, variableColorColorBuffer );
+    glBufferData( GL_ARRAY_BUFFER, circleColors.size()*sizeof(vec4), &circleColors[0], GL_STATIC_DRAW );
     GLuint cPosition = glGetAttribLocation( variableColorProgram, "vColorIn" );
-
-    //Set up VAO
-    glGenVertexArrays(1,&VAO);
-    glBindVertexArray(VAO);
-    glEnableVertexAttribArray( vPosition );
+    glVertexAttribPointer( cPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
     glEnableVertexAttribArray( cPosition );
-
-    glBindBuffer( GL_ARRAY_BUFFER, positionBuffer );
-    glVertexAttribPointer( vPosition, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-
-    glBindBuffer( GL_ARRAY_BUFFER, colorBuffer );
-    glVertexAttribPointer( cPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
-
-
 
 
     glClearColor( 1.0, 1.0, 1.0, 1.0 );
@@ -130,8 +141,7 @@ display( void )
     glClear( GL_COLOR_BUFFER_BIT );
 
     GLuint color_loc = glGetUniformLocation(singleColorProgram, "color");
-    glBindVertexArray(VAO);
-
+    glBindVertexArray(singleColorVAO);
     glUseProgram( singleColorProgram );
     glUniform4fv(color_loc, 1, red_opaque);
     glDrawArrays( GL_TRIANGLE_FAN, 0, 4 );
@@ -139,8 +149,9 @@ display( void )
     glUniform4fv(color_loc, 1, blue_opaque);
     glDrawArrays( GL_TRIANGLE_FAN, 4, 3 );
 
+    glBindVertexArray( variableColorVAO );
     glUseProgram( variableColorProgram );
-    glDrawArrays( GL_TRIANGLE_FAN, 7, points.size() - 7);
+    glDrawArrays( GL_TRIANGLE_FAN, 0, circlePts.size());
 
     glFlush();
 }
@@ -200,6 +211,6 @@ void m_glewInitAndVersion(void)
 }
 
 void close(){
-	glDeleteBuffers(1, &positionBuffer);  //delete the buffers (free up space on GPU)
+	//glDeleteBuffers(1, &singleColorPointBuffer);  //delete the buffers (free up space on GPU)
 
 }
