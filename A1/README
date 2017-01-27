@@ -1,0 +1,13 @@
+Dave Sizer
+CS432 HW1
+
+For this assignment, I wrote OpenGL code that draws a flat shaded triangle and
+square, and a multicolored circle.
+
+I used two seperate shaders and VAOs, one for drawing the flat colors through a
+uniform and one for allowing color vertex info to be passed in.
+
+I'm building for Linux and using CMake for project configuration, but running the build.sh script in
+the A1 directory should build everything and put a Main executable in that
+directory.  I have tested that this works on tux, but for convenience I am
+including the pre-built Main binary so you can just run it.
