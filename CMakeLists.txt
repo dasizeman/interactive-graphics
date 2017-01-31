@@ -15,10 +15,12 @@ include_directories (${OPENGL_INCLUDE_DIRS}
                      ${GLUT_INCLUDE_DIRS}
                      ${GLEW_INCLUDE_DIRS}
 		     ${PROJECT_SOURCE_DIR}
-		     ${PROJECT_SOURCE_DIR}/DaveUtils)
+		     ${PROJECT_SOURCE_DIR}/DaveUtils
+		     ${PROJECT_SOURCE_DIR}/DGFX)
 
 add_subdirectory (InitShader)
 add_subdirectory (DaveUtils)
+add_subdirectory (DGFX)
 
 add_executable (Main ${PROJECT_DIR}/main.cpp)
 
@@ -31,4 +33,5 @@ target_link_libraries (Main
                        ${GLUT_LIBRARY}
                        ${GLEW_LIBRARY}
                        InitShader
-		       DaveUtils)
+		       DaveUtils
+		       DGFX)
