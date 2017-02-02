@@ -1,55 +1,30 @@
 #ifndef __DGFX_2D_H__
 #define __DGFX_2D_H__
-#include "drawable.h"
 #include "mat.h"
+#include "entity.h"
 namespace dgfx {
 	
-    class Polygon : public Drawable {
+    class Polygon : public Entity{
 	public:
-	    Polygon(std::vector<vec2> vertices) : Drawable(),
-		m_vertices(vertices){}
+	    Polygon(std::vector<vec2> vertices, std::vector<vec4> colors);
+	    ~Polygon();
 
 	protected:
 	    mat4 m_rotationMatrix, m_translationMatrix;
 	    std::vector<vec2> m_vertices;
+	    std::vector<vec4> m_vertexColors;
 
-	
-	    virtual void _init(std::vector<GLuint> &vertexBuffers,
-			      std::vector<GLuint> &vertexArrays,
-			      GLuint &shader);
+	    // Update the GL data
+	    virtual void init();
+	    virtual void update(const std::map<std::string, GLuint>& shaderMap);
+	    void draw(const std::map<std::string, GLuint>& shaderMap);
 
-	    virtual void _update(std::vector<GLuint> &vertexBuffers,
-			       std::vector<GLuint> &vertexArrays,
-			       GLuint &shader);
+	    // Called by the scene on an event
+	    virtual void keyboardHandler(unsigned char key, int x, int y);
+	    virtual void clickHandler(GLint button, GLint state, GLint x, GLint y);
 
-	    // Note that you can not draw a Polygon, you must draw a subclass
-	
-	public:
-	    void setVelocity(vec3 velocity);
-		
-
-	    void setRotationAngle(float theta);
-    };
-
-    class UniformPolygon : public Polygon {
-	public:
-	    UniformPolygon(std::vector<vec2> vertices, vec4 color) : Polygon( vertices ),
-		m_color(color){}
-
-	protected:
-	    vec4 m_color;
-
-	    void _init(std::vector<GLuint> &vertexBuffers,
-			      std::vector<GLuint> &vertexArrays,
-			      GLuint &shader);
-
-	    void _draw(std::vector<GLuint> &vertexBuffers,
-			       std::vector<GLuint> &vertexArrays,
-			       GLuint &shader);
-
-	    void _update(std::vector<GLuint> &vertexBuffers,
-			       std::vector<GLuint> &vertexArrays,
-			       GLuint &shader);
+	private:
+	    void updateBuffers();
     };
 }
 

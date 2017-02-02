@@ -1,3 +1,4 @@
+#include <iostream>
 #include "2d.h"
 
 namespace dgfx {
@@ -6,54 +7,47 @@ namespace dgfx {
 	
 	// VBO Map:
 	// 0 - Vertices
-	void Polygon::_init(std::vector<GLuint> &vertexBuffers,
-			  std::vector<GLuint> &vertexArrays,
-			  GLuint &shader) {
-	    //TODO compile shader and setup VAOS/VBOS, and uniforms
-	}
+    Polygon::Polygon(std::vector<vec2> vertices, std::vector<vec4> colors) : 
+	    m_vertices(vertices),
+	    m_vertexColors(colors){
+		init();
+		m_vertexArrays.resize(1);
+		m_vertexBuffers.resize(2);
+	    }
 
-	void Polygon::_update(std::vector<GLuint> &vertexBuffers,
-			   std::vector<GLuint> &vertexArrays,
-			   GLuint &shader) {
-	    // Copy vertex data to the VBO
+    Polygon::~Polygon() {
+	glDeleteBuffers( m_vertexBuffers.size(), &m_vertexBuffers[0] );	
+    }
 
-	}
+    void Polygon::init() {
+	//TODO compile shader and setup VAOS/VBOS, and uniforms
+	std::cout << "Polygon::_init()" << std::endl;
 
-	// Note that you can not draw a Polygon, you must draw a subclass
+	glGenBuffers( 2, &m_vertexBuffers[0] );
+	glGenVertexArrays(1, &m_vertexArrays[0]);
+	glBindVertexArray( m_vertexArrays[0] );
 	
-	void Polygon::setVelocity(vec3 velocity) {
-	    // TODO set the translation matrix
-	    update();
-	    
-	}
+    }
 
-	void Polygon::setRotationAngle(float theta) {
-	    // TODO set the rotation matrix
-	    update();
-	}
+    void Polygon::update(const std::map<std::string, GLuint>& shaderMap) {
+	// Copy vertex data to the VBO
+	std::cout << "Polygon::_update()" << std::endl;
 
+    }
 
-	// Note that you can not draw a Polygon, you must draw a subclass
-	
-	/* Uniform Polygon */
-	void UniformPolygon::_init(std::vector<GLuint> &vertexBuffers,
-			  std::vector<GLuint> &vertexArrays,
-			  GLuint &shader) {
-	    Polygon::_init(vertexBuffers, vertexArrays, shader);
-	    //TODO Set the shader and the color uniform value
-	}
+    void Polygon::draw(const std::map<std::string, GLuint>& shaderMap) {
 
-	void UniformPolygon::_draw(std::vector<GLuint> &vertexBuffers,
-			   std::vector<GLuint> &vertexArrays,
-			   GLuint &shader) {
-	}
+    }
+    void Polygon::keyboardHandler(unsigned char key, int x, int y){}
+    void Polygon::clickHandler(GLint button, GLint state, GLint x, GLint y){}
+    
+    void Polygon::updateBuffers() {
+	// Copy vertex data
+       glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
+       glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec2), &m_vertices[0], GL_STATIC_DRAW );
 
-	void UniformPolygon::_update(std::vector<GLuint> &vertexBuffers,
-			   std::vector<GLuint> &vertexArrays,
-			   GLuint &shader) {
-	    Polygon::_update( vertexBuffers, vertexArrays, shader );
-	    // TODO set the color uniform
-
-	}
-
+       // Copy color data
+       glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
+       glBufferData( GL_ARRAY_BUFFER, m_vertexColors.size()*sizeof(vec4), &m_vertexColors[0], GL_STATIC_DRAW );
+    }
 }

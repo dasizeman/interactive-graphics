@@ -1,2 +1,2 @@
 cmake_minimum_required (VERSION 2.6)
-add_library (DGFX 2d.cpp)
+add_library (DGFX 2d.cpp scene.cpp entity.cpp)
