@@ -10,7 +10,7 @@ out vec4 color;
 
 void main() 
 { 
-  gl_Position = vec4((vPosition*model_view).xy, 0, 1);
+  gl_Position = vPosition;
   color = vColorIn;
 
 }

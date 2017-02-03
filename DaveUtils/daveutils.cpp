@@ -1,5 +1,6 @@
 #include <ctime>
 #include <cstdlib>
+#include <iostream>
 
 #include "daveutils.h"
 
@@ -13,5 +14,6 @@ namespace daveutils {
 	return min + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(max-min)));
 	
     }
+
 
 }

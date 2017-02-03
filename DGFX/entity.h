@@ -10,9 +10,6 @@ namespace dgfx {
 class Entity {
     friend class Scene;
 
-    public:
-    virtual ~Entity();
-
     protected:
 	std::vector<GLuint> m_vertexBuffers, m_vertexArrays;
 	std::vector<std::string>  m_shaderNames;

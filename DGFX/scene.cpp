@@ -23,18 +23,14 @@ namespace dgfx {
 
     void Scene::init(std::string windowName, int width, int height) {
 #ifdef __APPLE__
-	glutInitDisplayMode( GLUT_3_2_CORE_PROFILE|GLUT_RGBA | GLUT_DOUBLE);
+	glutInitDisplayMode( GLUT_3_2_CORE_PROFILE|GLUT_RGBA | GLUT_SINGLE);
 #else
-	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
+	glutInitDisplayMode( GLUT_RGBA | GLUT_SINGLE);
 #endif
 	glutInitWindowSize( width, height );
 
 	glutCreateWindow( windowName.c_str() );
 	glewInitAndVersion();
-
-
-    for ( std::unique_ptr<Entity>& entity : m_entities )
-        entity->init(m_shaderMap);
 
 
 	// Assign event callbacks
@@ -54,6 +50,10 @@ namespace dgfx {
 	for ( std::string shaderName : entity->getShaderNames() )
 	    addShader( shaderName );
 
+    entity->init( m_shaderMap );
+
+    m_entities.push_back( std::move(entity) );
+
     }
 
     void Scene::addShader ( std::string shaderName ) {
@@ -64,11 +64,13 @@ namespace dgfx {
 	ss << SHADER_PATH << shaderName << ".vert";
 	auto vertexShaderPath = ss.str();
 
-	ss.clear();
+	ss.str("");
 	ss << SHADER_PATH << shaderName << ".frag";
 	auto fragmentShaderPath = ss.str();
 
-	m_shaderMap[ shaderName ] = InitShader( vertexShaderPath.c_str(), fragmentShaderPath.c_str() );
+	GLuint shader = InitShader( vertexShaderPath.c_str(), fragmentShaderPath.c_str() );
+    std::cout << "Initialized shader ID " << shader << std::endl;
+    m_shaderMap[ shaderName ] = shader;
     }
     
     void Scene::start() {
@@ -100,7 +102,8 @@ namespace dgfx {
         for ( std::unique_ptr<Entity>& entity : m_entities )
             entity->draw( m_shaderMap );
 
-        glutSwapBuffers();	
+        //glutSwapBuffers();
+        glFlush();
     }
 
     void Scene::timerCallback( int value ) {
@@ -109,10 +112,10 @@ namespace dgfx {
     }
 
     void Scene::cleanup() {
-        for ( std::unique_ptr<Entity> &entity : m_entities ) {
-            auto ptr = entity.release();
-            delete( ptr );
-        }
+        //for ( std::unique_ptr<Entity> &entity : m_entities ) {
+        //    auto ptr = entity.release();
+        //    delete( ptr );
+        //}
 
     }
 
@@ -134,7 +137,7 @@ namespace dgfx {
 
     // Static 
     void Scene::display_callback_wrapper() {
-	Scene::getInstance().displayCallback();
+	    Scene::getInstance().displayCallback();
     }
 
      void Scene::timer_callback_wrapper( int value ) {
