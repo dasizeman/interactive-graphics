@@ -27,9 +27,9 @@ add_executable (Main ${PROJECT_DIR}/main.cpp)
 
 
 target_link_libraries (Main
-                       ${OPENGL_LIBRARIES}
-                       ${GLUT_LIBRARY}
-                       ${GLEW_LIBRARY}
+		       DGFX
                        InitShader
 		       DaveUtils
-		       DGFX)
+                       ${OPENGL_LIBRARIES}
+                       ${GLUT_LIBRARY}
+                       ${GLEW_LIBRARY})

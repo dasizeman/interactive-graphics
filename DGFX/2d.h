@@ -6,18 +6,18 @@ namespace dgfx {
 	
     class Polygon : public Entity{
 	public:
-	    Polygon(std::vector<vec2> vertices, std::vector<vec4> colors);
+	    Polygon(std::vector<vec3> vertices, std::vector<vec4> colors);
 	    ~Polygon();
 
 	protected:
 	    mat4 m_rotationMatrix, m_translationMatrix;
-	    std::vector<vec2> m_vertices;
+	    std::vector<vec3> m_vertices;
 	    std::vector<vec4> m_vertexColors;
 
 	    // Update the GL data
-	    virtual void init();
-	    virtual void update(const std::map<std::string, GLuint>& shaderMap);
-	    void draw(const std::map<std::string, GLuint>& shaderMap);
+	    virtual void init(std::map<std::string, GLuint>& shaderMap);
+	    virtual void update(std::map<std::string, GLuint>& shaderMap);
+	    void draw(std::map<std::string, GLuint>& shaderMap);
 
 	    // Called by the scene on an event
 	    virtual void keyboardHandler(unsigned char key, int x, int y);
