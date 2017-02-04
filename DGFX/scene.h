@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <cstdint>
 
 #include "Angel.h"
 #include "entity.h"
@@ -14,11 +15,12 @@ namespace dgfx {
 	    std::map<std::string, GLuint> m_shaderMap;
 	    std::vector<std::unique_ptr<Entity>> m_entities;
 
-	    const std::string DEFAULT_WINDOW_NAME = "CS432";
-	    const std::string SHADER_PATH = "shaders/";
-	    const int DEFAULT_WINDOW_WIDTH = 500, DEFAULT_WINDOW_HEIGHT = 500;
+        uint16_t m_screenWidth, m_screenHeight;
 
-	    void init();
+	    const static std::string DEFAULT_WINDOW_NAME;
+	    const static std::string SHADER_PATH;
+	    const static int DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT;
+
 	    void init(std::string windowName, int width, int height);
 	    void addShader ( std::string shaderName );
 

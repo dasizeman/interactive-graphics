@@ -22,10 +22,11 @@ int main(int argc, char **argv) {
          vec4( 0.0, 0.0, 1.0, 1.0 ),
          vec4( 0.0, 0.0, 1.0, 1.0 ),
     };
+     vec4 color( 0.0, 0.0, 1.0, 1.0 );
 
-    Scene::getInstance().addEntity(std::unique_ptr<Entity>(new Polygon(points, colors)));
+    //Scene::getInstance().addEntity(std::unique_ptr<Entity>(new SingleColorPolygon(points, color)));
 
-	Scene::getInstance().start();
+    Scene::getInstance().start();
 
 
     return 0;

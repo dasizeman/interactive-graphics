@@ -1,24 +1,27 @@
 #include <sstream>
+
 #include "scene.h"
+#include "daveutils.h"
+#include "2d.h"
+
 namespace dgfx {
+
+    const std::string Scene::DEFAULT_WINDOW_NAME = "CS432";
+    const std::string Scene::SHADER_PATH = "shaders/";
+    const int Scene::DEFAULT_WINDOW_WIDTH = 500, Scene::DEFAULT_WINDOW_HEIGHT = 500;
     
 
-    Scene::Scene() {
-	init();
-    }
+    Scene::Scene() : 
+        Scene::Scene( DEFAULT_WINDOW_NAME, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT){}
     
-    Scene::Scene(std::string windowName, int width, int height) {
-	init( windowName, width, height );
+    Scene::Scene(std::string windowName, int width, int height) : 
+        m_screenWidth( width ), m_screenHeight( height ){
+        init( windowName, width, height );
     }
 
     Scene& Scene::getInstance() {
 	static Scene instance;
 	return instance;
-    }
-
-
-    void Scene::init() {
-	init( DEFAULT_WINDOW_NAME, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT );
     }
 
     void Scene::init(std::string windowName, int width, int height) {
@@ -94,10 +97,26 @@ namespace dgfx {
         for ( std::unique_ptr<Entity>& entity : m_entities )
             entity->clickHandler( button, state, x, y);
 
+        //std::cout << x << "," << y << std::endl;
+        vec4 blue_opaque = vec4( 0.0, 0.0, 1.0, 1.0 );
+        vec4 red_opaque = vec4( 1.0, 0.0, 0.0, 1.0 );
+
+        if ( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN ) {
+            auto squarePts = daveutils::generateSquareVertices( x ,y, 20 );
+            daveutils::convertToCameraCoordinates( squarePts, m_screenWidth, m_screenHeight );
+            std::cout << daveutils::printVector( squarePts ) << std::endl;
+            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( squarePts, blue_opaque ) ));
+            std::cout << m_entities.size() << std::endl;
+            glutPostRedisplay();
+        }
+        
+
     }
 
     void Scene::displayCallback() {
         glClear( GL_COLOR_BUFFER_BIT );
+        std::cout << "Display called!" << std::endl;
+
 
         for ( std::unique_ptr<Entity>& entity : m_entities )
             entity->draw( m_shaderMap );
