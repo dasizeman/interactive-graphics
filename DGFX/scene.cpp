@@ -26,9 +26,9 @@ namespace dgfx {
 
     void Scene::init(std::string windowName, int width, int height) {
 #ifdef __APPLE__
-	glutInitDisplayMode( GLUT_3_2_CORE_PROFILE|GLUT_RGBA | GLUT_SINGLE);
+	glutInitDisplayMode( GLUT_3_2_CORE_PROFILE|GLUT_RGBA | GLUT_DOUBLE);
 #else
-	glutInitDisplayMode( GLUT_RGBA | GLUT_SINGLE);
+	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
 #endif
 	glutInitWindowSize( width, height );
 
@@ -40,7 +40,10 @@ namespace dgfx {
 	glutDisplayFunc( &Scene::display_callback_wrapper );
 	glutMouseFunc( &Scene::click_callback_wrapper );
 	glutKeyboardFunc( &Scene::keyboard_callback_wrapper );
+    glutSpecialFunc( &Scene::special_key_wrapper );
     glutWMCloseFunc( &Scene::close_handler );
+
+    glutTimerFunc( 1000/60, timer_callback_wrapper, 0);
 
 
     glClearColor( 1.0, 1.0, 1.0, 1.0 );
@@ -80,11 +83,20 @@ namespace dgfx {
 	glutMainLoop();
     }
 
+    void Scene::globalAnimationToggle() {
+        for ( std::unique_ptr<Entity> &entity : m_entities )
+            entity->m_doAnimation = m_doAnimation;
+    }
+
     void Scene::keyboardHandler(unsigned char key, int x, int y) {
         switch( key ) {
         case 033:  // Escape key
         case 'q': case 'Q':
             exit( EXIT_SUCCESS );
+            break;
+        case ' ':
+            m_doAnimation = !m_doAnimation;
+            globalAnimationToggle();
             break;
         }
 
@@ -93,21 +105,40 @@ namespace dgfx {
 
     }
 
+
+    void Scene::specialKeyHandler(int key, int x, int y) {
+        for (std::unique_ptr<Entity> &entity : m_entities )
+            entity->specialKeyHandler( key, x, y);
+    }
+
     void Scene::clickHandler(GLint button, GLint state, GLint x, GLint y) {
         for ( std::unique_ptr<Entity>& entity : m_entities )
             entity->clickHandler( button, state, x, y);
 
-        //std::cout << x << "," << y << std::endl;
         vec4 blue_opaque = vec4( 0.0, 0.0, 1.0, 1.0 );
         vec4 red_opaque = vec4( 1.0, 0.0, 0.0, 1.0 );
 
+        // TODO make object factories, as well as an eventhandler interface that
+        // is set on the scene to swap event handling logic
         if ( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN ) {
-            auto squarePts = daveutils::generateSquareVertices( x ,y, 20 );
+            auto squarePts = daveutils::generateSquareVertices( x ,y, 100 );
             daveutils::convertToCameraCoordinates( squarePts, m_screenWidth, m_screenHeight );
-            std::cout << daveutils::printVector( squarePts ) << std::endl;
-            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( squarePts, blue_opaque ) ));
-            std::cout << m_entities.size() << std::endl;
+            float cameraX = static_cast<float>(x);
+            float cameraY = static_cast<float>(y);
+            daveutils::convertClickCoordinates( cameraX, cameraY, m_screenWidth, m_screenHeight );
+            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( squarePts, red_opaque, cameraX, cameraY ) ));
             glutPostRedisplay();
+        }
+
+        if( button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN ) {
+            auto trianglePts = daveutils::generateTriangleVertices( x , y, 100);
+            daveutils::convertToCameraCoordinates( trianglePts, m_screenWidth, m_screenHeight );
+            float cameraX = static_cast<float>(x);
+            float cameraY = static_cast<float>(y);
+            daveutils::convertClickCoordinates( cameraX, cameraY, m_screenWidth, m_screenHeight );
+            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( trianglePts, blue_opaque, cameraX, cameraY) ));
+            glutPostRedisplay();
+            
         }
         
 
@@ -115,14 +146,13 @@ namespace dgfx {
 
     void Scene::displayCallback() {
         glClear( GL_COLOR_BUFFER_BIT );
-        std::cout << "Display called!" << std::endl;
 
 
         for ( std::unique_ptr<Entity>& entity : m_entities )
             entity->draw( m_shaderMap );
 
-        //glutSwapBuffers();
-        glFlush();
+        glutSwapBuffers();
+        //glFlush();
     }
 
     void Scene::timerCallback( int value ) {
@@ -130,13 +160,6 @@ namespace dgfx {
             entity->update( m_shaderMap );
     }
 
-    void Scene::cleanup() {
-        //for ( std::unique_ptr<Entity> &entity : m_entities ) {
-        //    auto ptr = entity.release();
-        //    delete( ptr );
-        //}
-
-    }
 
     void Scene::glewInitAndVersion(void)
     {
@@ -160,19 +183,25 @@ namespace dgfx {
     }
 
      void Scene::timer_callback_wrapper( int value ) {
-	Scene::getInstance().timerCallback( value );
+        Scene::getInstance().timerCallback( value );
+        glutTimerFunc( 1000/60, timer_callback_wrapper, 0 );
+        glutPostRedisplay();
      }
 
      void Scene::keyboard_callback_wrapper(unsigned char key, int x, int y) {
-	Scene::getInstance().keyboardHandler( key, x, y );
+        Scene::getInstance().keyboardHandler( key, x, y );
+     }
+
+     void Scene::special_key_wrapper( int key, int x, int y ) {
+        Scene::getInstance().specialKeyHandler( key, x, y );
      }
 
      void Scene::click_callback_wrapper(GLint button, GLint state, GLint x, GLint y) {
-	 Scene::getInstance().clickHandler( button, state, x, y );
+         Scene::getInstance().clickHandler( button, state, x, y );
      }
 
 	void Scene::close_handler() {
-        Scene::getInstance().cleanup(); 
     }
+
     
 }

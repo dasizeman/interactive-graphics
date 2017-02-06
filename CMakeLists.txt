@@ -30,6 +30,7 @@ target_link_libraries (Main
                        DGFX
                        DaveUtils
                        InitShader
+                       m
                        ${OPENGL_LIBRARIES}
                        ${GLUT_LIBRARY}
                        ${GLEW_LIBRARY})

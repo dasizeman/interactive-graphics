@@ -1,12 +1,11 @@
-#version 130
+#version 150
 
-in vec4 vPosition;
+in vec3 vPosition;
 
-out vec4 color;
-
-
+uniform mat3 model_view;
 
 void main() 
 { 
-  gl_Position = vPosition;
+    gl_Position = vec4((model_view*vPosition).xy,0,1);
+
 }

@@ -12,7 +12,11 @@ namespace daveutils {
 
     std::vector<vec3> generateSquareVertices( uint16_t centerX, uint16_t centerY, uint16_t edgeLength );
 
+    std::vector<vec3> generateTriangleVertices( uint16_t centerX, uint16_t centerY, uint16_t size );
+
     void convertToCameraCoordinates( std::vector<vec3> &vertices, uint16_t screenWidth, uint16_t screenHeight );
+
+    void convertClickCoordinates( float &x, float &y, int screenWidth, int screenHeight);
 
     template <typename T>
     std::string printVector ( std::vector<T> &vec) {

@@ -11,9 +11,10 @@
 
 namespace dgfx {
     class Scene {
-	private:
+	protected:
 	    std::map<std::string, GLuint> m_shaderMap;
 	    std::vector<std::unique_ptr<Entity>> m_entities;
+        bool m_doAnimation = false;
 
         uint16_t m_screenWidth, m_screenHeight;
 
@@ -24,17 +25,16 @@ namespace dgfx {
 	    void init(std::string windowName, int width, int height);
 	    void addShader ( std::string shaderName );
 
-	    void keyboardHandler(unsigned char key, int x, int y);
-	    void clickHandler(GLint button, GLint state, GLint x, GLint y);
+	    virtual void keyboardHandler(unsigned char key, int x, int y);
+        virtual void specialKeyHandler(int key, int x, int y);
 
-	    void displayCallback();
-	    void timerCallback( int value );
+	    virtual void clickHandler(GLint button, GLint state, GLint x, GLint y);
+
+	    virtual void displayCallback();
+	    virtual void timerCallback( int value );
 
 	    void glewInitAndVersion(void);
-        void cleanup();
 
-	    static void display_callback_wrapper();
-	    static void timer_callback_wrapper( int value );
 
 	public:
 	    Scene();
@@ -43,12 +43,17 @@ namespace dgfx {
 
 	    void addEntity(std::unique_ptr<Entity> entity);
 	    void start();
+        void globalAnimationToggle();
 
 	    static Scene& getInstance();
 
 	    static void keyboard_callback_wrapper(unsigned char key, int x, int y);
+        static void special_key_wrapper(int key, int x, int y);
 	    static void click_callback_wrapper(GLint button, GLint state, GLint x, GLint y);
+	    static void display_callback_wrapper();
+	    static void timer_callback_wrapper( int value );
         static void close_handler();
     };
+
 }
 #endif

@@ -10,12 +10,17 @@ namespace dgfx {
 	
 	// VBO Map:
 	// 0 - Vertices
-    Polygon::Polygon(std::vector<vec3> vertices, std::vector<vec4> colors) :
-        m_vertices( vertices ), m_vertexColors( colors ){}
+    Polygon::Polygon(std::vector<vec3> vertices, std::vector<vec4> colors, float x, float y) :
+        m_vertices( vertices ), 
+        m_vertexColors( colors ),
+        m_x(x),
+        m_y(y){}
 
 
-    Polygon::Polygon( std::vector<vec3> vertices ) :
-        m_vertices( vertices ){}
+    Polygon::Polygon( std::vector<vec3> vertices, float x, float y ) :
+        m_vertices( vertices ),
+        m_x(x),
+        m_y(y){}
 
     void Polygon::update(std::map<std::string, GLuint>& shaderMap) {
 	// Copy vertex data to the VBO
@@ -23,13 +28,45 @@ namespace dgfx {
 
     }
 
-    void Polygon::keyboardHandler(unsigned char key, int x, int y){}
+    void Polygon::keyboardHandler(unsigned char key, int x, int y){ 
+    }
+
     void Polygon::clickHandler(GLint button, GLint state, GLint x, GLint y){}
+    void Polygon::specialKeyHandler(int key, int x, int y) {
+
+    }
+
+
+    mat3 Polygon::calculateModelMatrix ( float theta ) {
+        // Translate to origin
+        mat3 t1 (
+                vec3(1, 0, -m_x),
+                vec3(0, 1, -m_y),
+                vec3(0, 0, 1));
+
+
+        // Rotate
+        mat3 rot (
+                vec3(cos(m_theta), -sin(m_theta), 0),
+               vec3( sin(m_theta), cos(m_theta), 0),
+                vec3(0, 0, 1));
+
+
+        // Translate back
+        mat3 t2 (
+                vec3(1, 0, m_x),
+                vec3(0, 1, m_y),
+                vec3(0, 0, 1));
+
+
+        mat3 result = t2*rot*t1;
+        return result;
+    }
     
     /* Multicolor Polygon */
 
-    MulticolorPolygon::MulticolorPolygon(std::vector<vec3> vertices, std::vector<vec4> colors) : 
-	    Polygon( vertices, colors ){
+    MulticolorPolygon::MulticolorPolygon(std::vector<vec3> vertices, std::vector<vec4> colors, float x, float y) : 
+	    Polygon( vertices, colors, x, y ){
 
         m_vertexBuffers.resize(2);
         m_vertexArrays.resize(1);
@@ -84,8 +121,8 @@ namespace dgfx {
 
     /* SingleColorPolygon */
 
-    SingleColorPolygon::SingleColorPolygon(std::vector<vec3> vertices, vec4 color) :
-        Polygon( vertices ), m_color( color ){
+    SingleColorPolygon::SingleColorPolygon(std::vector<vec3> vertices, vec4 color, float x, float y) :
+        Polygon( vertices, x, y ), m_color( color ), m_currentColor( color ){
         m_vertexBuffers.resize( 1 );
         m_vertexArrays.resize( 1 );
 
@@ -117,19 +154,30 @@ namespace dgfx {
         // Set the color uniform
         GLuint shader = shaderMap[ SINGLE_COLOR_SHADER_NAME ];
         GLuint color_loc = glGetUniformLocation(shader, "color");
-        glUniform4fv(color_loc, 1, m_color);
+        glUniform4fv(color_loc, 1, m_currentColor);
+
+        // Set the model matrix uniform
+        GLuint matrix_loc = glGetUniformLocation( shader, "model_view" );
+        glUniformMatrix3fv(matrix_loc,1, GL_TRUE,m_modelMatrix);
+
 
 
         glUseProgram( shader );
         glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
 	}
 
-	void SingleColorPolygon::update(std::map<std::string, GLuint>& shaderMap)
-	{
+	void SingleColorPolygon::update(std::map<std::string, GLuint>& shaderMap) {
+        if( !m_doAnimation )
+            return;
+
+        if( m_theta >= 2*M_PI )
+            m_theta = 0;
+
+        m_theta += (2*M_PI)/100;
+
+        m_currentColor = m_color * ((sin(m_theta) + 1.0) / 2.0);
+
+        m_modelMatrix = calculateModelMatrix ( m_theta );
 	}
-
-
-
-
 
 }
