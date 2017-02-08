@@ -1,6 +1,6 @@
 #include <sstream>
 
-#include "scene.h"
+#include "scene.hpp"
 #include "daveutils.h"
 #include "2d.h"
 
@@ -20,67 +20,67 @@ namespace dgfx {
     }
 
     Scene& Scene::getInstance() {
-	static Scene instance;
-	return instance;
+        static Scene instance;
+        return instance;
     }
 
     void Scene::init(std::string windowName, int width, int height) {
 #ifdef __APPLE__
-	glutInitDisplayMode( GLUT_3_2_CORE_PROFILE|GLUT_RGBA | GLUT_DOUBLE);
+        glutInitDisplayMode( GLUT_3_2_CORE_PROFILE|GLUT_RGBA | GLUT_DOUBLE);
 #else
-	glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
+        glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
 #endif
-	glutInitWindowSize( width, height );
+        glutInitWindowSize( width, height );
 
-	glutCreateWindow( windowName.c_str() );
-	glewInitAndVersion();
-
-
-	// Assign event callbacks
-	glutDisplayFunc( &Scene::display_callback_wrapper );
-	glutMouseFunc( &Scene::click_callback_wrapper );
-	glutKeyboardFunc( &Scene::keyboard_callback_wrapper );
-    glutSpecialFunc( &Scene::special_key_wrapper );
-    glutWMCloseFunc( &Scene::close_handler );
-
-    glutTimerFunc( 1000/60, timer_callback_wrapper, 0);
+        glutCreateWindow( windowName.c_str() );
+        glewInitAndVersion();
 
 
-    glClearColor( 1.0, 1.0, 1.0, 1.0 );
+        // Assign event callbacks
+        glutDisplayFunc( &Scene::display_callback_wrapper );
+        glutMouseFunc( &Scene::click_callback_wrapper );
+        glutKeyboardFunc( &Scene::keyboard_callback_wrapper );
+        glutSpecialFunc( &Scene::special_key_wrapper );
+        glutWMCloseFunc( &Scene::close_handler );
+
+        glutTimerFunc( 1000/60, timer_callback_wrapper, 0);
+
+
+        glClearColor( 1.0, 1.0, 1.0, 1.0 );
 
     }
 
 
     void Scene::addEntity(std::unique_ptr<Entity> entity) {
-	// Load all of the entity's shaders
-	for ( std::string shaderName : entity->getShaderNames() )
-	    addShader( shaderName );
+        // Load all of the entity's shaders
+        for ( std::string shaderName : entity->getShaderNames() )
+            addShader( shaderName );
 
-    entity->init( m_shaderMap );
+        entity->init( m_shaderMap );
 
-    m_entities.push_back( std::move(entity) );
+        m_entities.push_back( std::move(entity) );
 
     }
 
     void Scene::addShader ( std::string shaderName ) {
-	if ( m_shaderMap.find( shaderName ) != m_shaderMap.end() )
-	    return;
+        if ( m_shaderMap.find( shaderName ) != m_shaderMap.end() )
+            return;
 
-	std::stringstream ss;
-	ss << SHADER_PATH << shaderName << ".vert";
-	auto vertexShaderPath = ss.str();
+        std::stringstream ss;
+        ss << SHADER_PATH << shaderName << ".vert";
+        auto vertexShaderPath = ss.str();
 
-	ss.str("");
-	ss << SHADER_PATH << shaderName << ".frag";
-	auto fragmentShaderPath = ss.str();
+        ss.str("");
+        ss << SHADER_PATH << shaderName << ".frag";
+        auto fragmentShaderPath = ss.str();
 
-	GLuint shader = InitShader( vertexShaderPath.c_str(), fragmentShaderPath.c_str() );
-    std::cout << "Initialized shader ID " << shader << std::endl;
-    m_shaderMap[ shaderName ] = shader;
+        GLuint shader = InitShader( vertexShaderPath.c_str(), fragmentShaderPath.c_str() );
+        std::cout << "Initialized shader ID " << shader << std::endl;
+        m_shaderMap[ shaderName ] = shader;
     }
     
     void Scene::start() {
-	glutMainLoop();
+        glutMainLoop();
     }
 
     void Scene::globalAnimationToggle() {
@@ -179,7 +179,7 @@ namespace dgfx {
 
     // Static 
     void Scene::display_callback_wrapper() {
-	    Scene::getInstance().displayCallback();
+            Scene::getInstance().displayCallback();
     }
 
      void Scene::timer_callback_wrapper( int value ) {
@@ -200,7 +200,7 @@ namespace dgfx {
          Scene::getInstance().clickHandler( button, state, x, y );
      }
 
-	void Scene::close_handler() {
+        void Scene::close_handler() {
     }
 
     
