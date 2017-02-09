@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "2d.h"
-#include "daveutils.h"
+#include "geometry.hpp"
+#include "daveutils.hpp"
 
 namespace dgfx {
 

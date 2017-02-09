@@ -7,7 +7,7 @@
 #include <cstdint>
 
 #include "Angel.h"
-#include "entity.h"
+#include "entity.hpp"
 
 namespace dgfx {
     class Scene {
@@ -24,6 +24,14 @@ namespace dgfx {
 
         void init(std::string windowName, int width, int height);
         void addShader ( std::string shaderName );
+
+	virtual void keyboardHandler(unsigned char key, int x, int y);
+        virtual void specialKeyHandler(int key, int x, int y);
+
+	virtual void clickHandler(GLint button, GLint state, GLint x, GLint y);
+
+	virtual void displayCallback();
+	virtual void timerCallback( int value );
 
         void glewInitAndVersion(void);
 

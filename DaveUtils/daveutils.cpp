@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "daveutils.h"
+#include "daveutils.hpp"
 
 static bool randSeeded = false;
 namespace daveutils {

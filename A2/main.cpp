@@ -2,8 +2,8 @@
 #include <memory>
 #include <iostream>
 
-#include "2d.h"
-#include "scene.h"
+#include "geometry.hpp"
+#include "scene.hpp"
 #include "Angel.h"
 using namespace dgfx;
 

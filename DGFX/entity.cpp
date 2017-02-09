@@ -1,4 +1,4 @@
-#include "entity.h"
+#include "entity.hpp"
 namespace dgfx {
 
     const std::vector<std::string>& Entity::getShaderNames() {

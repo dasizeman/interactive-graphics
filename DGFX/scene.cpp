@@ -1,8 +1,8 @@
 #include <sstream>
 
 #include "scene.hpp"
-#include "daveutils.h"
-#include "2d.h"
+#include "daveutils.hpp"
+#include "geometry.hpp"
 
 namespace dgfx {
 
