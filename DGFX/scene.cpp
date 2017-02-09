@@ -93,10 +93,6 @@ namespace dgfx {
         case 'q': case 'Q':
             exit( EXIT_SUCCESS );
             break;
-        case ' ':
-            m_doAnimation = !m_doAnimation;
-            globalAnimationToggle();
-            break;
         }
 
         for ( std::unique_ptr<Entity>& entity : m_entities )
@@ -113,34 +109,6 @@ namespace dgfx {
     void Scene::clickHandler(GLint button, GLint state, GLint x, GLint y) {
         for ( std::unique_ptr<Entity>& entity : m_entities )
             entity->clickHandler( button, state, x, y);
-
-        vec4 blue_opaque = vec4( 0.0, 0.0, 1.0, 1.0 );
-        vec4 red_opaque = vec4( 1.0, 0.0, 0.0, 1.0 );
-
-        // TODO make object factories, as well as an eventhandler interface that
-        // is set on the scene to swap event handling logic
-        if ( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN ) {
-            auto squarePts = daveutils::generateSquareVertices( x ,y, 100 );
-            daveutils::convertToCameraCoordinates( squarePts, m_screenWidth, m_screenHeight );
-            float cameraX = static_cast<float>(x);
-            float cameraY = static_cast<float>(y);
-            daveutils::convertClickCoordinates( cameraX, cameraY, m_screenWidth, m_screenHeight );
-            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( squarePts, red_opaque, cameraX, cameraY ) ));
-            glutPostRedisplay();
-        }
-
-        if( button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN ) {
-            auto trianglePts = daveutils::generateTriangleVertices( x , y, 100);
-            daveutils::convertToCameraCoordinates( trianglePts, m_screenWidth, m_screenHeight );
-            float cameraX = static_cast<float>(x);
-            float cameraY = static_cast<float>(y);
-            daveutils::convertClickCoordinates( cameraX, cameraY, m_screenWidth, m_screenHeight );
-            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( trianglePts, blue_opaque, cameraX, cameraY) ));
-            glutPostRedisplay();
-            
-        }
-        
-
     }
 
     void Scene::displayCallback() {
@@ -202,5 +170,48 @@ namespace dgfx {
         void Scene::close_handler() {
     }
 
-    
+    // ---- A2Scene ------
+
+     void A2Scene::keyboardHandler(unsigned char key, int x, int y) {
+         switch ( key ) {
+            case ' ':
+            m_doAnimation = !m_doAnimation;
+            globalAnimationToggle();
+            break;
+         }
+
+         Scene::keyboardHandler( key, x, y );
+
+     }
+
+     void A2Scene::clickHandler(GLint button, GLint state, GLint x, GLint y) {
+        vec4 blue_opaque = vec4( 0.0, 0.0, 1.0, 1.0 );
+        vec4 red_opaque = vec4( 1.0, 0.0, 0.0, 1.0 );
+
+        // TODO make object factories, as well as an eventhandler interface that
+        // is set on the scene to swap event handling logic
+        if ( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN ) {
+            auto squarePts = daveutils::generateSquareVertices( x ,y, 100 );
+            daveutils::convertToCameraCoordinates( squarePts, m_screenWidth, m_screenHeight );
+            float cameraX = static_cast<float>(x);
+            float cameraY = static_cast<float>(y);
+            daveutils::convertClickCoordinates( cameraX, cameraY, m_screenWidth, m_screenHeight );
+            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( squarePts, red_opaque, cameraX, cameraY ) ));
+            glutPostRedisplay();
+        }
+
+        if( button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN ) {
+            auto trianglePts = daveutils::generateTriangleVertices( x , y, 100);
+            daveutils::convertToCameraCoordinates( trianglePts, m_screenWidth, m_screenHeight );
+            float cameraX = static_cast<float>(x);
+            float cameraY = static_cast<float>(y);
+            daveutils::convertClickCoordinates( cameraX, cameraY, m_screenWidth, m_screenHeight );
+            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( trianglePts, blue_opaque, cameraX, cameraY) ));
+            glutPostRedisplay();
+            
+        }
+
+        Scene::clickHandler( button, state, x, y );
+
+     }
 }

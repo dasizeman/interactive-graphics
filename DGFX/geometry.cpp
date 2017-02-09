@@ -22,11 +22,6 @@ namespace dgfx {
         m_x(x),
         m_y(y){}
 
-    void Polygon::update(std::map<std::string, GLuint>& shaderMap) {
-	// Copy vertex data to the VBO
-	std::cout << "Polygon::_update()" << std::endl;
-
-    }
 
     void Polygon::keyboardHandler(unsigned char key, int x, int y){ 
     }
@@ -119,6 +114,9 @@ namespace dgfx {
 
 
     void MulticolorPolygon::draw(std::map<std::string, GLuint>& shaderMap) {
+        GLuint shader = shaderMap[ MULTICOLOR_SHADER_NAME ];
+        glUseProgram( shader );
+        glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
 
     }
 

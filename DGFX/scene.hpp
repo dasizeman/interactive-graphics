@@ -55,5 +55,10 @@ namespace dgfx {
         static void close_handler();
     };
 
+    class A2Scene : public Scene {
+	 void keyboardHandler(unsigned char key, int x, int y);
+	 void clickHandler(GLint button, GLint state, GLint x, GLint y);
+    };
+
 }
 #endif
