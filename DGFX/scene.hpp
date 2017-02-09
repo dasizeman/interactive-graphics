@@ -11,6 +11,8 @@
 
 namespace dgfx {
     class Scene {
+    public:
+        static std::shared_ptr<Scene> m_instance;
     protected:
         std::map<std::string, GLuint> m_shaderMap;
         std::vector<std::unique_ptr<Entity>> m_entities;
@@ -44,8 +46,6 @@ namespace dgfx {
         void addEntity(std::unique_ptr<Entity> entity);
         void start();
         void globalAnimationToggle();
-
-        static Scene& getInstance();
 
         static void keyboard_callback_wrapper(unsigned char key, int x, int y);
         static void special_key_wrapper(int key, int x, int y);

@@ -9,24 +9,15 @@ using namespace dgfx;
 
 int main(int argc, char **argv) {
 	glutInit( &argc, argv );
-    std::vector<vec3> points = {
-        vec3( 0.25, 0.25, 1),
-        vec3( 0.75, 0.25, 1),
-        vec3( 0.75, 0.75, 1),
-        vec3( 0.25, 0.75, 1),
-    };
 
-    std::vector<vec4> colors = {
-         vec4( 0.0, 0.0, 1.0, 1.0 ),
-         vec4( 0.0, 0.0, 1.0, 1.0 ),
-         vec4( 0.0, 0.0, 1.0, 1.0 ),
-         vec4( 0.0, 0.0, 1.0, 1.0 ),
-    };
-     vec4 color( 0.0, 0.0, 1.0, 1.0 );
+    // A scene encapsulates eveythung the user sees and interacts with    
+    std::shared_ptr<Scene> scene(new Scene());
 
-    //Scene::getInstance().addEntity(std::unique_ptr<Entity>(new SingleColorPolygon(points, color)));
+    // This is kind of hacky, but we do it so we can hide *most* of the glut
+    // init and callback hooking inside the scene class
+    Scene::m_instance = scene;
 
-    Scene::getInstance().start();
+    scene->start();
 
 
     return 0;

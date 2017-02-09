@@ -1,4 +1,5 @@
 #include <sstream>
+#include <cassert>
 
 #include "scene.hpp"
 #include "daveutils.hpp"
@@ -9,6 +10,8 @@ namespace dgfx {
     const std::string Scene::DEFAULT_WINDOW_NAME = "CS432";
     const std::string Scene::SHADER_PATH = "shaders/";
     const int Scene::DEFAULT_WINDOW_WIDTH = 500, Scene::DEFAULT_WINDOW_HEIGHT = 500;
+
+    std::shared_ptr<Scene> Scene::m_instance = nullptr;
     
 
     Scene::Scene() : 
@@ -17,11 +20,6 @@ namespace dgfx {
     Scene::Scene(std::string windowName, int width, int height) : 
         m_screenWidth( width ), m_screenHeight( height ){
         init( windowName, width, height );
-    }
-
-    Scene& Scene::getInstance() {
-        static Scene instance;
-        return instance;
     }
 
     void Scene::init(std::string windowName, int width, int height) {
@@ -80,6 +78,7 @@ namespace dgfx {
     }
     
     void Scene::start() {
+        assert( m_instance != nullptr );
         glutMainLoop();
     }
 
@@ -179,25 +178,25 @@ namespace dgfx {
 
     // Static 
     void Scene::display_callback_wrapper() {
-            Scene::getInstance().displayCallback();
+        Scene::m_instance->displayCallback();
     }
 
      void Scene::timer_callback_wrapper( int value ) {
-        Scene::getInstance().timerCallback( value );
+        Scene::m_instance->timerCallback( value );
         glutTimerFunc( 1000/60, timer_callback_wrapper, 0 );
         glutPostRedisplay();
      }
 
      void Scene::keyboard_callback_wrapper(unsigned char key, int x, int y) {
-        Scene::getInstance().keyboardHandler( key, x, y );
+        Scene::m_instance->keyboardHandler( key, x, y );
      }
 
      void Scene::special_key_wrapper( int key, int x, int y ) {
-        Scene::getInstance().specialKeyHandler( key, x, y );
+        Scene::m_instance->specialKeyHandler( key, x, y );
      }
 
      void Scene::click_callback_wrapper(GLint button, GLint state, GLint x, GLint y) {
-         Scene::getInstance().clickHandler( button, state, x, y );
+         Scene::m_instance->clickHandler( button, state, x, y );
      }
 
         void Scene::close_handler() {
