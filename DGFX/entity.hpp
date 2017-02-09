@@ -10,28 +10,28 @@ namespace dgfx {
 class Entity {
     friend class Scene;
 
-    protected:
-	std::vector<GLuint> m_vertexBuffers, m_vertexArrays;
-	std::vector<std::string>  m_shaderNames;
+protected:
+    std::vector<GLuint> m_vertexBuffers, m_vertexArrays;
+    std::vector<std::string>  m_shaderNames;
     bool m_doAnimation = false;
     
 	
-	// Called by the scene to set up GL data structures
-	virtual void init(std::map<std::string, GLuint>& shaderMap) = 0;
-	
-	// Called by the scene to update GL state based on internal state
-	virtual void update(std::map<std::string, GLuint>& shaderMap) = 0;
+    // Called by the scene to set up GL data structures
+    virtual void init(std::map<std::string, GLuint>& shaderMap) = 0;
+    
+    // Called by the scene to update GL state based on internal state
+    virtual void update(std::map<std::string, GLuint>& shaderMap) = 0;
 
-	// Called by the scene to draw the object
-	virtual void draw(std::map<std::string, GLuint>& shaderMap) = 0;
+    // Called by the scene to draw the object
+    virtual void draw(std::map<std::string, GLuint>& shaderMap) = 0;
 
-	// Called by the scene on an event
-	virtual void keyboardHandler(unsigned char key, int x, int y) = 0;
-	virtual void clickHandler(GLint button, GLint state, GLint x, GLint y)=0;
+    // Called by the scene on an event
+    virtual void keyboardHandler(unsigned char key, int x, int y) = 0;
+    virtual void clickHandler(GLint button, GLint state, GLint x, GLint y)=0;
     virtual void specialKeyHandler(int key, int x, int y)= 0;
 	
-	// Called by the scene to determine which shaders to load
-	const std::vector<std::string> &getShaderNames();
+    // Called by the scene to determine which shaders to load
+    const std::vector<std::string> &getShaderNames();
 	
 
 };

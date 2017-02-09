@@ -10,11 +10,11 @@
 namespace daveutils {
     float randomFloat(float min, float max);
 
-    std::vector<vec3> generateSquareVertices( uint16_t centerX, uint16_t centerY, uint16_t edgeLength );
+    std::vector<vec4> generateSquareVertices( uint16_t centerX, uint16_t centerY, uint16_t edgeLength );
 
-    std::vector<vec3> generateTriangleVertices( uint16_t centerX, uint16_t centerY, uint16_t size );
+    std::vector<vec4> generateTriangleVertices( uint16_t centerX, uint16_t centerY, uint16_t size );
 
-    void convertToCameraCoordinates( std::vector<vec3> &vertices, uint16_t screenWidth, uint16_t screenHeight );
+    void convertToCameraCoordinates( std::vector<vec4> &vertices, uint16_t screenWidth, uint16_t screenHeight );
 
     void convertClickCoordinates( float &x, float &y, int screenWidth, int screenHeight);
 

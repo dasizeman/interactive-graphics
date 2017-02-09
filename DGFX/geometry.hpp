@@ -1,23 +1,23 @@
-#ifndef __DGFX_2D_H__
-#define __DGFX_2D_H__
+#ifndef __DGFX_GEOMETRY_H__
+#define __DGFX_GEOMETRY_H__
 #include "mat.h"
 #include "entity.hpp"
 namespace dgfx {
 	
     class Polygon : public Entity{
     public:
-        Polygon( std::vector<vec3> vertices, std::vector<vec4> colors, float x, float y );
-        Polygon( std::vector<vec3> vertices, float x, float y); 
+        Polygon( std::vector<vec4> vertices, std::vector<vec4> colors, float x, float y );
+        Polygon( std::vector<vec4> vertices, float x, float y); 
 
     protected:
-        std::vector<vec3> m_vertices;
+        std::vector<vec4> m_vertices;
         std::vector<vec4> m_vertexColors;
-        mat3 m_modelMatrix;
+        mat4 m_modelMatrix;
         float m_x, m_y;
         float m_theta = 0;
         bool m_specialMode = false;
 
-        virtual mat3 calculateModelMatrix ( float theta );
+        virtual mat4 calculateModelMatrix ( float theta );
 
 
         // Update the GL data
@@ -37,7 +37,7 @@ namespace dgfx {
 
     class SingleColorPolygon : public Polygon {
     public:
-        SingleColorPolygon(std::vector<vec3> vertices, vec4 color, float x, float y);
+        SingleColorPolygon(std::vector<vec4> vertices, vec4 color, float x, float y);
 
     protected: 
         const std::string SINGLE_COLOR_SHADER_NAME = "a2_single";
@@ -52,7 +52,7 @@ namespace dgfx {
 
     class MulticolorPolygon : public Polygon {
     public:
-        MulticolorPolygon(std::vector<vec3> vertices, std::vector<vec4> colors, float x, float y);
+        MulticolorPolygon(std::vector<vec4> vertices, std::vector<vec4> colors, float x, float y);
 
     protected:
         const std::string MULTICOLOR_SHADER_NAME = "a2_multi";

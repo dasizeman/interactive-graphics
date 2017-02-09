@@ -10,14 +10,14 @@ namespace dgfx {
 	
 	// VBO Map:
 	// 0 - Vertices
-    Polygon::Polygon(std::vector<vec3> vertices, std::vector<vec4> colors, float x, float y) :
+    Polygon::Polygon(std::vector<vec4> vertices, std::vector<vec4> colors, float x, float y) :
         m_vertices( vertices ), 
         m_vertexColors( colors ),
         m_x(x),
         m_y(y){}
 
 
-    Polygon::Polygon( std::vector<vec3> vertices, float x, float y ) :
+    Polygon::Polygon( std::vector<vec4> vertices, float x, float y ) :
         m_vertices( vertices ),
         m_x(x),
         m_y(y){}
@@ -37,35 +37,38 @@ namespace dgfx {
     }
 
 
-    mat3 Polygon::calculateModelMatrix ( float theta ) {
+    mat4 Polygon::calculateModelMatrix ( float theta ) {
         // Translate to origin
-        mat3 t1 (
-                vec3(1, 0, -m_x),
-                vec3(0, 1, -m_y),
-                vec3(0, 0, 1));
+        mat4 t1 (
+                vec4(1, 0, 0,-m_x),
+                vec4(0, 1, 0, -m_y),
+                vec4(0,0,1,0),
+                vec4(0, 0,0, 1));
 
 
         // Rotate
-        mat3 rot (
-                vec3(cos(m_theta), -sin(m_theta), 0),
-               vec3( sin(m_theta), cos(m_theta), 0),
-                vec3(0, 0, 1));
+        mat4 rot (
+                vec4(cos(m_theta), -sin(m_theta), 0,0),
+               vec4( sin(m_theta), cos(m_theta), 0,0),
+                vec4(0, 0,1, 0),
+                vec4(0, 0,0, 1));
 
 
         // Translate back
-        mat3 t2 (
-                vec3(1, 0, m_x),
-                vec3(0, 1, m_y),
-                vec3(0, 0, 1));
+        mat4 t2 (
+                vec4(1, 0, 0, m_x),
+                vec4(0, 1, 0, m_y),
+                vec4(0, 0, 1, 0),
+                vec4(0, 0,0, 1));
 
 
-        mat3 result = t2*rot*t1;
+        mat4 result = t2*rot*t1;
         return result;
     }
     
     /* Multicolor Polygon */
 
-    MulticolorPolygon::MulticolorPolygon(std::vector<vec3> vertices, std::vector<vec4> colors, float x, float y) : 
+    MulticolorPolygon::MulticolorPolygon(std::vector<vec4> vertices, std::vector<vec4> colors, float x, float y) : 
 	    Polygon( vertices, colors, x, y ){
 
         m_vertexBuffers.resize(2);
@@ -88,7 +91,7 @@ namespace dgfx {
 
         // Copy vertex data
         glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec3), &m_vertices[0], GL_STATIC_DRAW );
+        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
 
         GLuint shader = shaderMap[ MULTICOLOR_SHADER_NAME ];
         
@@ -107,7 +110,7 @@ namespace dgfx {
 	void MulticolorPolygon::update(std::map<std::string, GLuint>& shaderMap) {
         // Copy vertex data
         glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec3), &m_vertices[0], GL_STATIC_DRAW );
+        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
 
        // Copy color data
        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
@@ -121,7 +124,7 @@ namespace dgfx {
 
     /* SingleColorPolygon */
 
-    SingleColorPolygon::SingleColorPolygon(std::vector<vec3> vertices, vec4 color, float x, float y) :
+    SingleColorPolygon::SingleColorPolygon(std::vector<vec4> vertices, vec4 color, float x, float y) :
         Polygon( vertices, x, y ), m_color( color ), m_currentColor( color ){
         m_vertexBuffers.resize( 1 );
         m_vertexArrays.resize( 1 );
@@ -137,13 +140,13 @@ namespace dgfx {
 
         // Copy vertex data
         glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec3), &m_vertices[0], GL_STATIC_DRAW );
+        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
 
         GLuint shader = shaderMap[ SINGLE_COLOR_SHADER_NAME ];
         
         GLuint vPosition = glGetAttribLocation( shader, "vPosition" );
         glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glVertexAttribPointer( vPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+        glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
         glEnableVertexAttribArray( vPosition );
 	}
 
@@ -158,7 +161,7 @@ namespace dgfx {
 
         // Set the model matrix uniform
         GLuint matrix_loc = glGetUniformLocation( shader, "model_view" );
-        glUniformMatrix3fv(matrix_loc,1, GL_TRUE,m_modelMatrix);
+        glUniformMatrix4fv(matrix_loc,1, GL_TRUE,m_modelMatrix);
 
 
 
