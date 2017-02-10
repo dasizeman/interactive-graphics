@@ -186,32 +186,45 @@ namespace dgfx {
     // ------------------------------------
     //
     //
-        FlatSquareAttributeGenerator::FlatSquareAttributeGenerator(float sideLength) :
-            m_sideLength(sideLength){}
+    FlatSquareAttributeGenerator::FlatSquareAttributeGenerator(float sideLength) :
+        m_sideLength(sideLength){}
 
 
-    void FlatSquareAttributeGenerator::generate( 
-            std::vector<vec4> &vertices,
-            std::vector<GLuint> &elements,
-            std::vector<vec4> &colors )  {
+        void FlatSquareAttributeGenerator::generate( 
+                    std::vector<vec4> &vertices,
+                    std::vector<GLuint> &elements,
+                    std::vector<vec4> &colors ) {
 
-        float offset = m_sideLength / 2;
-        float z = offset;
+            vertices= daveutils::generateNGon( 4, m_sideLength, m_sideLength );
+            elements = { 0, 1, 2, 3, 4, 5 ,6 ,7};
+            for (int i = 0; i < vertices.size(); i++) {
+                vec4 color;
+                color.x = daveutils::randomFloat( 0, 1);
+                color.y = daveutils::randomFloat( 0, 1);
+                color.z = daveutils::randomFloat( 0, 1);
+                color.w = 1;
 
-        // First we will define the 8 unique vertices on the front and back
-        
-        // 
+                colors.push_back( color );
 
-
+            }
     }
 
+    const std::string Model::FLAT_3D_SHADER_NAME = "3d_model";
+    const std::string Model::WIREFRAME_SHADER_NAME = "3d_wireframe";
     
 
-    Model::Model( AttributeGenerator generator,
-                     float x,
-                     float y, 
-                     float z) {
+    Model::Model( std::unique_ptr<AttributeGenerator> generator,
+                 float x,
+                 float y, 
+                 float z) : 
+                    m_x(x),
+                    m_y(y),
+                    m_z(z) {
+            m_shaderNames.push_back( FLAT_3D_SHADER_NAME );
 
+            m_vertexBuffers.resize( 3 );
+            m_vertexArrays.resize( 1 );
+            generator->generate( m_vertices, m_elements, m_colors );
     }
 
     void Model::translate (float x, float y, float z) {
@@ -225,15 +238,54 @@ namespace dgfx {
     // Called by the scene to set up GL data structures
     void Model::init(std::map<std::string, GLuint>& shaderMap) {
 
+        GLuint mainShader = shaderMap[ FLAT_3D_SHADER_NAME ];
+
+        glGenBuffers(3, &m_vertexBuffers[0]);
+        glGenVertexArrays( 1, &m_vertexArrays[0]);
+
+        glBindVertexArray( m_vertexArrays[0] );
+
+        // Copy vertex position data and set up the attribute pointers
+        
+        glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffers[0] );
+        glBufferData( GL_ARRAY_BUFFER, m_vertices.size() * sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
+        GLuint vPositionLoc = glGetAttribLocation( mainShader, "vPosition" );
+        glEnableVertexAttribArray( vPositionLoc );
+        glVertexAttribPointer( vPositionLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+        // Do the same for color data
+        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
+        glBufferData( GL_ARRAY_BUFFER, m_colors.size() * sizeof(vec4), &m_colors[0], GL_STATIC_DRAW );
+        GLuint vColorInLoc = glGetAttribLocation( mainShader, "vColorIn" );
+        glEnableVertexAttribArray( vColorInLoc );
+        glVertexAttribPointer( vColorInLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+        // Copy over the element data
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_vertexBuffers[2] );
+        glBufferData( GL_ELEMENT_ARRAY_BUFFER, m_elements.size() * sizeof(GLuint), &m_elements[0], GL_STATIC_DRAW );
+
     }
     
     // Called by the scene to update GL state based on internal state
     void Model::update(std::map<std::string, GLuint>& shaderMap) {
+        if ( m_yRot >= 360)
+            m_yRot = 0;
+        m_yRot += 2;
 
     }
 
     // Called by the scene to draw the object
     void Model::draw(std::map<std::string, GLuint>& shaderMap) {
+        GLuint shader = shaderMap[ FLAT_3D_SHADER_NAME ];
+        // Set the model matrix uniform
+        GLuint matrix_loc = glGetUniformLocation( shader, "model_matrix" );
+
+        //TODO generate model matrix here based on the current parameters of the
+        //model
+        glUniformMatrix4fv(matrix_loc,1, GL_TRUE, RotateY(m_yRot));
+
+        glDrawElements( GL_TRIANGLE_FAN, m_elements.size() / 2, GL_UNSIGNED_INT, BUFFER_OFFSET(0) );
+        glDrawElements( GL_TRIANGLE_FAN, m_elements.size() / 2, GL_UNSIGNED_INT, BUFFER_OFFSET((m_elements.size() / 2) * sizeof(GLuint)) );
 
     }
 
@@ -245,10 +297,6 @@ namespace dgfx {
 
     }
     void Model::specialKeyHandler(int key, int x, int y) {
-
-    }
-
-    void Model::setShaders() {
 
     }
 }

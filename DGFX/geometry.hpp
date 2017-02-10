@@ -81,7 +81,7 @@ namespace dgfx {
             float m_sideLength;
         public:
             FlatSquareAttributeGenerator(float sideLength);
-            void generate( 
+            virtual void generate( 
                     std::vector<vec4> &vertices,
                     std::vector<GLuint> &elements,
                     std::vector<vec4> &colors );
@@ -91,7 +91,7 @@ namespace dgfx {
     class Model : public Entity {
 
         public:
-            Model( AttributeGenerator generator,
+            Model( std::unique_ptr<AttributeGenerator> generator,
                      float x,
                      float y, 
                      float z);
@@ -106,6 +106,8 @@ namespace dgfx {
             vec4 m_frameColor;
         protected:
 
+        const static std::string FLAT_3D_SHADER_NAME, WIREFRAME_SHADER_NAME;
+
         // Called by the scene to set up GL data structures
         virtual void init(std::map<std::string, GLuint>& shaderMap);
         
@@ -119,11 +121,6 @@ namespace dgfx {
         virtual void keyboardHandler(unsigned char key, int x, int y);
         virtual void clickHandler(GLint button, GLint state, GLint x, GLint y);
         virtual void specialKeyHandler(int key, int x, int y);
-
-        virtual void setShaders();
-
-
-
     };
     
 }

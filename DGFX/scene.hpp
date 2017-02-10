@@ -60,5 +60,16 @@ namespace dgfx {
 	 void clickHandler(GLint button, GLint state, GLint x, GLint y);
     };
 
+    class A3Scene : public Scene {
+
+	 void keyboardHandler(unsigned char key, int x, int y);
+         void specialKeyHandler(int key, int x, int y);
+
+	 void displayCallback();
+
+    };
+
+
+
 }
 #endif

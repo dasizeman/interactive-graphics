@@ -10,15 +10,18 @@ using namespace dgfx;
 int main(int argc, char **argv) {
 	glutInit( &argc, argv );
 
-    // A scene encapsulates eveythung the user sees and interacts with    
-    std::shared_ptr<Scene> scene(new A2Scene());
+    //A scene encapsulates eveythung the user sees and interacts with    
+    std::shared_ptr<Scene> scene(new A3Scene());
 
     // This is kind of hacky, but we do it so we can hide *most* of the glut
     // init and callback hooking inside the scene class
     Scene::m_instance = scene;
 
-    scene->start();
+    // Create a cube
+    std::unique_ptr<AttributeGenerator> generator (new FlatSquareAttributeGenerator(0.5));
+    scene->addEntity(std::unique_ptr<Entity>(new Model(std::move(generator), 0, 0, 0)));
 
+    scene->start();
 
     return 0;
 }

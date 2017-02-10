@@ -61,13 +61,17 @@ namespace daveutils {
         x = newX;
         y = newY;
     }
+
+    // Generate the front and back faces of an n-sided polyhedron
     std::vector<vec4> generateNGon(uint16_t numSides, float size, float depth) {
         std::vector<vec4> result;
+        result.resize( 2 * numSides );
         float stepSize = (2*M_PI) / numSides;
         float theta = stepSize;
 
         for (int i = 0; i < numSides; i++) {
-            result.push_back( vec4( size*cos(theta), size*sin(theta), 0, 1));
+            result[ i ] = vec4( size*cos(theta), size*sin(theta), depth/2, 1);
+            result[ i+numSides ] = vec4( size*cos(theta), size*sin(theta), -depth/2, 1);
             theta += stepSize;
         }
 

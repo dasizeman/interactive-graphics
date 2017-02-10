@@ -24,9 +24,9 @@ namespace dgfx {
 
     void Scene::init(std::string windowName, int width, int height) {
 #ifdef __APPLE__
-        glutInitDisplayMode( GLUT_3_2_CORE_PROFILE|GLUT_RGBA | GLUT_DOUBLE);
+        glutInitDisplayMode( GLUT_3_2_CORE_PROFILE|GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 #else
-        glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE);
+        glutInitDisplayMode( GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 #endif
         glutInitWindowSize( width, height );
 
@@ -44,6 +44,7 @@ namespace dgfx {
         glutTimerFunc( 1000/60, timer_callback_wrapper, 0);
 
 
+        glEnable (GL_DEPTH_TEST);
         glClearColor( 1.0, 1.0, 1.0, 1.0 );
 
     }
@@ -112,7 +113,7 @@ namespace dgfx {
     }
 
     void Scene::displayCallback() {
-        glClear( GL_COLOR_BUFFER_BIT );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
         for ( std::unique_ptr<Entity>& entity : m_entities )
@@ -212,6 +213,25 @@ namespace dgfx {
         }
 
         Scene::clickHandler( button, state, x, y );
+
+     }
+
+     // ----- A3 Scene -----
+     
+     void A3Scene::keyboardHandler(unsigned char key, int x, int y) {
+         Scene::keyboardHandler( key, x, y );
+
+     }
+     void A3Scene::specialKeyHandler(int key, int x, int y) {
+
+     }
+
+     void A3Scene::displayCallback() {
+         // TODO we will need to insert the calls to update the view and
+         // projection matrices here
+         
+
+         Scene::displayCallback();
 
      }
 }
