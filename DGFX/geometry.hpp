@@ -3,6 +3,8 @@
 #include "mat.h"
 #include "entity.hpp"
 namespace dgfx {
+
+    // 2D stuff
 	
     class Polygon : public Entity{
     public:
@@ -60,6 +62,70 @@ namespace dgfx {
         void update(std::map<std::string, GLuint>& shaderMap);
         void draw(std::map<std::string, GLuint>& shaderMap);
     };
+
+    // -------------------------------------
+    // 3D 
+    // ------------------------------------
+    //
+    class AttributeGenerator {
+        public:
+            virtual void generate( 
+                    std::vector<vec4> &vertices,
+                    std::vector<GLuint> &elements,
+                    std::vector<vec4> &colors ) = 0;
+
+    };
+
+    class FlatSquareAttributeGenerator : public AttributeGenerator {
+        private:
+            float m_sideLength;
+        public:
+            FlatSquareAttributeGenerator(float sideLength);
+            void generate( 
+                    std::vector<vec4> &vertices,
+                    std::vector<GLuint> &elements,
+                    std::vector<vec4> &colors );
+
+    };
+    
+    class Model : public Entity {
+
+        public:
+            Model( AttributeGenerator generator,
+                     float x,
+                     float y, 
+                     float z);
+
+            void translate (float x, float y, float z);
+            void rotate    (float x, float y, float z);
+
+        private:
+            std::vector<vec4> m_vertices, m_colors;
+            std::vector<GLuint> m_elements;
+            float m_x, m_y, m_z, m_xRot, m_yRot, m_zRot;
+            vec4 m_frameColor;
+        protected:
+
+        // Called by the scene to set up GL data structures
+        virtual void init(std::map<std::string, GLuint>& shaderMap);
+        
+        // Called by the scene to update GL state based on internal state
+        virtual void update(std::map<std::string, GLuint>& shaderMap);
+
+        // Called by the scene to draw the object
+        virtual void draw(std::map<std::string, GLuint>& shaderMap);
+
+        // Called by the scene on an event
+        virtual void keyboardHandler(unsigned char key, int x, int y);
+        virtual void clickHandler(GLint button, GLint state, GLint x, GLint y);
+        virtual void specialKeyHandler(int key, int x, int y);
+
+        virtual void setShaders();
+
+
+
+    };
+    
 }
 
 #endif

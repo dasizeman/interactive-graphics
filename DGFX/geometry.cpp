@@ -18,9 +18,7 @@ namespace dgfx {
 
 
     Polygon::Polygon( std::vector<vec4> vertices, float x, float y ) :
-        m_vertices( vertices ),
-        m_x(x),
-        m_y(y){}
+        Polygon( vertices, std::vector<vec4>(), x, y){}
 
 
     void Polygon::keyboardHandler(unsigned char key, int x, int y){ 
@@ -69,56 +67,57 @@ namespace dgfx {
         m_vertexBuffers.resize(2);
         m_vertexArrays.resize(1);
 
-        // TODO we probably don't want to do this in the constructor, since
-        // children classes may not want this shader loaded, but its not a huge
-        // deal.
-        m_shaderNames.push_back( MULTICOLOR_SHADER_NAME );
+        m_shaderNames.push_back(MULTICOLOR_SHADER_NAME);
+
+
     }
 
 
 	void MulticolorPolygon::init(std::map<std::string, GLuint>& shaderMap) {
-        //TODO compile shader and setup VAOS/VBOS, and uniforms
-        std::cout << "Polygon::_init()" << std::endl;
+            //TODO compile shader and setup VAOS/VBOS, and uniforms
+            std::cout << "Polygon::_init()" << std::endl;
 
-        glGenBuffers( 2, &m_vertexBuffers[0] );
-        glGenVertexArrays(1, &m_vertexArrays[0]);
-        glBindVertexArray( m_vertexArrays[0] );
+            glGenBuffers( 2, &m_vertexBuffers[0] );
+            glGenVertexArrays(1, &m_vertexArrays[0]);
+            glBindVertexArray( m_vertexArrays[0] );
 
-        // Copy vertex data
-        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
+            // Copy vertex data
+            glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
+            glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
 
-        GLuint shader = shaderMap[ MULTICOLOR_SHADER_NAME ];
-        
-        GLuint vPosition = glGetAttribLocation( shader, "vPosition" );
-        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glVertexAttribPointer( vPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-        glEnableVertexAttribArray( vPosition );
+            GLuint shader = shaderMap[ MULTICOLOR_SHADER_NAME ];
+            
+            GLuint vPosition = glGetAttribLocation( shader, "vPosition" );
+            glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
+            glVertexAttribPointer( vPosition, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+            glEnableVertexAttribArray( vPosition );
 
 
-        GLuint cPosition = glGetAttribLocation( shader, "vColorIn" );
-        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
-        glVertexAttribPointer( cPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-        glEnableVertexAttribArray( cPosition );
+            GLuint cPosition = glGetAttribLocation( shader, "vColorIn" );
+            glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
+            glVertexAttribPointer( cPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+            glEnableVertexAttribArray( cPosition );
 	}
 
 	void MulticolorPolygon::update(std::map<std::string, GLuint>& shaderMap) {
-        // Copy vertex data
-        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
-
-       // Copy color data
-       glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
-       glBufferData( GL_ARRAY_BUFFER, m_vertexColors.size()*sizeof(vec4), &m_vertexColors[0], GL_STATIC_DRAW );
+           // Copy color data
+           glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
+           glBufferData( GL_ARRAY_BUFFER, m_vertexColors.size()*sizeof(vec4), &m_vertexColors[0], GL_STATIC_DRAW );
 	}
 
 
     void MulticolorPolygon::draw(std::map<std::string, GLuint>& shaderMap) {
-        GLuint shader = shaderMap[ MULTICOLOR_SHADER_NAME ];
-        glUseProgram( shader );
-        glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
+            GLuint shader = shaderMap[ MULTICOLOR_SHADER_NAME ];
+            glUseProgram( shader );
+
+            // Set the model matrix uniform
+            GLuint matrix_loc = glGetUniformLocation( shader, "model_view" );
+            glUniformMatrix4fv(matrix_loc,1, GL_TRUE,m_modelMatrix);
+
+            glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
 
     }
+
 
     /* SingleColorPolygon */
 
@@ -127,45 +126,46 @@ namespace dgfx {
         m_vertexBuffers.resize( 1 );
         m_vertexArrays.resize( 1 );
 
-        m_shaderNames.push_back( SINGLE_COLOR_SHADER_NAME );
+        m_shaderNames.push_back(SINGLE_COLOR_SHADER_NAME);
 
     }
 
 	void SingleColorPolygon::init(std::map<std::string, GLuint>& shaderMap) {
-        glGenBuffers( 1, &m_vertexBuffers[0] );
-        glGenVertexArrays(1, &m_vertexArrays[0]);
-        glBindVertexArray( m_vertexArrays[0] );
+            glGenBuffers( 1, &m_vertexBuffers[0] );
+            glGenVertexArrays(1, &m_vertexArrays[0]);
+            glBindVertexArray( m_vertexArrays[0] );
 
-        // Copy vertex data
-        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
+            // Copy vertex data
+            glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
+            glBufferData( GL_ARRAY_BUFFER, m_vertices.size()*sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
 
-        GLuint shader = shaderMap[ SINGLE_COLOR_SHADER_NAME ];
-        
-        GLuint vPosition = glGetAttribLocation( shader, "vPosition" );
-        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
-        glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-        glEnableVertexAttribArray( vPosition );
+            GLuint shader = shaderMap[ SINGLE_COLOR_SHADER_NAME ];
+            
+            GLuint vPosition = glGetAttribLocation( shader, "vPosition" );
+            glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );	  
+            glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+            glEnableVertexAttribArray( vPosition );
 	}
 
 
 	void SingleColorPolygon::draw(std::map<std::string, GLuint>& shaderMap) {
-        glBindVertexArray( m_vertexArrays[0] );
+            glBindVertexArray( m_vertexArrays[0] );
 
-        // Set the color uniform
-        GLuint shader = shaderMap[ SINGLE_COLOR_SHADER_NAME ];
-        GLuint color_loc = glGetUniformLocation(shader, "color");
-        glUniform4fv(color_loc, 1, m_currentColor);
+            // Set the color uniform
+            GLuint shader = shaderMap[ SINGLE_COLOR_SHADER_NAME ];
+            GLuint color_loc = glGetUniformLocation(shader, "color");
+            glUniform4fv(color_loc, 1, m_currentColor);
 
-        // Set the model matrix uniform
-        GLuint matrix_loc = glGetUniformLocation( shader, "model_view" );
-        glUniformMatrix4fv(matrix_loc,1, GL_TRUE,m_modelMatrix);
+            // Set the model matrix uniform
+            GLuint matrix_loc = glGetUniformLocation( shader, "model_view" );
+            glUniformMatrix4fv(matrix_loc,1, GL_TRUE,m_modelMatrix);
 
 
 
-        glUseProgram( shader );
-        glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
+            glUseProgram( shader );
+            glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
 	}
+
 
 	void SingleColorPolygon::update(std::map<std::string, GLuint>& shaderMap) {
         if( !m_doAnimation )
@@ -181,4 +181,74 @@ namespace dgfx {
         m_modelMatrix = calculateModelMatrix ( m_theta );
 	}
 
+    // -------------------------------------
+    // 3D 
+    // ------------------------------------
+    //
+    //
+        FlatSquareAttributeGenerator::FlatSquareAttributeGenerator(float sideLength) :
+            m_sideLength(sideLength){}
+
+
+    void FlatSquareAttributeGenerator::generate( 
+            std::vector<vec4> &vertices,
+            std::vector<GLuint> &elements,
+            std::vector<vec4> &colors )  {
+
+        float offset = m_sideLength / 2;
+        float z = offset;
+
+        // First we will define the 8 unique vertices on the front and back
+        
+        // 
+
+
+    }
+
+    
+
+    Model::Model( AttributeGenerator generator,
+                     float x,
+                     float y, 
+                     float z) {
+
+    }
+
+    void Model::translate (float x, float y, float z) {
+
+    }
+    void Model::rotate    (float x, float y, float z) {
+
+    }
+
+
+    // Called by the scene to set up GL data structures
+    void Model::init(std::map<std::string, GLuint>& shaderMap) {
+
+    }
+    
+    // Called by the scene to update GL state based on internal state
+    void Model::update(std::map<std::string, GLuint>& shaderMap) {
+
+    }
+
+    // Called by the scene to draw the object
+    void Model::draw(std::map<std::string, GLuint>& shaderMap) {
+
+    }
+
+    // Called by the scene on an event
+    void Model::keyboardHandler(unsigned char key, int x, int y) {
+
+    }
+    void Model::clickHandler(GLint button, GLint state, GLint x, GLint y) {
+
+    }
+    void Model::specialKeyHandler(int key, int x, int y) {
+
+    }
+
+    void Model::setShaders() {
+
+    }
 }

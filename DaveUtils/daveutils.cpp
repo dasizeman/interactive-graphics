@@ -61,6 +61,19 @@ namespace daveutils {
         x = newX;
         y = newY;
     }
+    std::vector<vec4> generateNGon(uint16_t numSides, float size, float depth) {
+        std::vector<vec4> result;
+        float stepSize = (2*M_PI) / numSides;
+        float theta = stepSize;
+
+        for (int i = 0; i < numSides; i++) {
+            result.push_back( vec4( size*cos(theta), size*sin(theta), 0, 1));
+            theta += stepSize;
+        }
+
+        return result;
+
+    }
 
 
 

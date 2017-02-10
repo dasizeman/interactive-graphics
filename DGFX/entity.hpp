@@ -29,7 +29,7 @@ protected:
     virtual void keyboardHandler(unsigned char key, int x, int y) = 0;
     virtual void clickHandler(GLint button, GLint state, GLint x, GLint y)=0;
     virtual void specialKeyHandler(int key, int x, int y)= 0;
-	
+
     // Called by the scene to determine which shaders to load
     const std::vector<std::string> &getShaderNames();
 	

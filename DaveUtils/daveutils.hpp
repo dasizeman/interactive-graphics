@@ -18,6 +18,8 @@ namespace daveutils {
 
     void convertClickCoordinates( float &x, float &y, int screenWidth, int screenHeight);
 
+    std::vector<vec4> generateNGon(uint16_t numSides, float size,  float depth);
+
     template <typename T>
     std::string printVector ( std::vector<T> &vec) {
         std::stringstream ss;

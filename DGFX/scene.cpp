@@ -191,7 +191,7 @@ namespace dgfx {
         // TODO make object factories, as well as an eventhandler interface that
         // is set on the scene to swap event handling logic
         if ( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN ) {
-            auto squarePts = daveutils::generateSquareVertices( x ,y, 100 );
+            auto squarePts = daveutils::generateSquareVertices( x, y, 100);
             daveutils::convertToCameraCoordinates( squarePts, m_screenWidth, m_screenHeight );
             float cameraX = static_cast<float>(x);
             float cameraY = static_cast<float>(y);
