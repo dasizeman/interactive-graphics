@@ -67,59 +67,33 @@ namespace dgfx {
     // 3D 
     // ------------------------------------
     //
-    class AttributeGenerator {
-        public:
-            virtual void generate( 
-                    std::vector<vec4> &vertices,
-                    std::vector<GLuint> &elements,
-                    std::vector<vec4> &colors ) = 0;
-            virtual void draw(
-                    std::vector<vec4> &vertices,
-                    std::vector<GLuint> &elements,
-                    std::vector<vec4> &colors,
-                    std::map<std::string, GLuint> &shaderMap) = 0;
-            virtual std::vector<std::string> getShaderNames() = 0;
-
-    };
-
-    class NPolyhedreonAttributeGenerator : public AttributeGenerator {
-        private:
-            float m_size, m_depth;
-            uint16_t m_n;
-            const static std::string WIREFRAME_SHADER_NAME;
-        public:
-            NPolyhedreonAttributeGenerator(uint16_t n, float size, float depth);
-            void generate( 
-                    std::vector<vec4> &vertices,
-                    std::vector<GLuint> &elements,
-                    std::vector<vec4> &colors );
-            void draw(
-                    std::vector<vec4> &vertices,
-                    std::vector<GLuint> &elements,
-                    std::vector<vec4> &colors,
-                    std::map<std::string, GLuint> &shaderMap);
-            std::vector<std::string> getShaderNames();
-
-    };
     
     class Model : public Entity {
 
         public:
-            Model( std::unique_ptr<AttributeGenerator> generator,
-                     float x,
+            Model( float x,
                      float y, 
-                     float z);
+                     float z,
+                     uint16_t n,
+                     float size, 
+                     float depth);
 
             void translate (float x, float y, float z);
             void rotate    (float x, float y, float z);
 
         private:
-            std::unique_ptr<AttributeGenerator> m_generator;
+            const static std::string WIREFRAME_SHADER_NAME;
             std::vector<vec4> m_vertices, m_colors;
             std::vector<GLuint> m_elements;
             float m_x, m_y, m_z, m_xRot, m_yRot, m_zRot;
             vec4 m_frameColor;
+            float m_size, m_depth;
+            uint16_t m_n;
         protected:
+        void generate( 
+                std::vector<vec4> &vertices,
+                std::vector<GLuint> &elements,
+                std::vector<vec4> &colors );
 
 
         // Called by the scene to set up GL data structures

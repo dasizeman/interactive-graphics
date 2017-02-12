@@ -187,13 +187,7 @@ namespace dgfx {
     // ------------------------------------
     //
     //
-    NPolyhedreonAttributeGenerator::NPolyhedreonAttributeGenerator(uint16_t n, float size, float depth) :
-        m_n( n ),
-        m_size( size ),
-        m_depth( depth ){}
-
-
-        void NPolyhedreonAttributeGenerator::generate( 
+        void Model::generate( 
                     std::vector<vec4> &vertices,
                     std::vector<GLuint> &elements,
                     std::vector<vec4> &colors ) {
@@ -244,48 +238,27 @@ namespace dgfx {
            std::cout << daveutils::printVector( elements ) << std::endl;
     }
 
-    void NPolyhedreonAttributeGenerator::draw(
-            std::vector<vec4> &vertices,
-            std::vector<GLuint> &elements,
-            std::vector<vec4> &colors,
-            std::map<std::string, GLuint> &shaderMap) {
-        uint64_t elementOffset = 0;
 
-        // Draw the front and back faces
-        glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
-        elementOffset += m_n;
-        glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
-        elementOffset += m_n;
-
-        // Draw each connecting quad
-        for (int i = 0; i < m_n; i++ ) {
-            glDrawElements( GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
-            elementOffset += 4;
-        }
-        
-
-    }
-
-    std::vector<std::string> NPolyhedreonAttributeGenerator::getShaderNames() { 
-        return std::vector<std::string> { WIREFRAME_SHADER_NAME };
-    }
-
-    const std::string NPolyhedreonAttributeGenerator::WIREFRAME_SHADER_NAME = "3d_wireframe";
+    const std::string Model::WIREFRAME_SHADER_NAME = "3d_wireframe";
     
 
-    Model::Model( std::unique_ptr<AttributeGenerator> generator,
-                 float x,
+    Model::Model(float x,
                  float y, 
-                 float z) : 
-                    m_generator( std::move( generator )),
+                 float z,
+                 uint16_t n,
+                 float size,
+                 float depth) : 
                     m_x(x),
                     m_y(y),
-                    m_z(z) {
-            m_shaderNames = m_generator->getShaderNames();
+                    m_z(z),
+                    m_n(n),
+                    m_size(size),
+                    m_depth(depth){
+            m_shaderNames.push_back( WIREFRAME_SHADER_NAME );
 
             m_vertexBuffers.resize( 3 );
             m_vertexArrays.resize( 1 );
-            m_generator->generate( m_vertices, m_elements, m_colors );
+            generate( m_vertices, m_elements, m_colors );
     }
 
     void Model::translate (float x, float y, float z) {
@@ -346,7 +319,20 @@ namespace dgfx {
         glUniformMatrix4fv(matrix_loc,1, GL_TRUE, RotateY(m_yRot));
 
         glUseProgram( shader );
-        m_generator->draw( m_vertices, m_elements, m_colors, shaderMap );
+
+        uint64_t elementOffset = 0;
+
+        // Draw the front and back faces
+        glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+        elementOffset += m_n;
+        glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+        elementOffset += m_n;
+
+        // Draw each connecting quad
+        for (int i = 0; i < m_n; i++ ) {
+            glDrawElements( GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+            elementOffset += 4;
+        }
 
 
 
