@@ -12,6 +12,7 @@
 namespace dgfx {
     class Scene {
     public:
+        const static std::string FLAT_3D_SHADER_NAME;
         static std::shared_ptr<Scene> m_instance;
     protected:
         std::map<std::string, GLuint> m_shaderMap;

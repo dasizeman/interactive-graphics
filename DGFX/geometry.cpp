@@ -3,6 +3,7 @@
 
 #include "geometry.hpp"
 #include "daveutils.hpp"
+#include "scene.hpp"
 
 namespace dgfx {
 
@@ -186,17 +187,18 @@ namespace dgfx {
     // ------------------------------------
     //
     //
-    FlatSquareAttributeGenerator::FlatSquareAttributeGenerator(float sideLength) :
-        m_sideLength(sideLength){}
+    NPolyhedreonAttributeGenerator::NPolyhedreonAttributeGenerator(uint16_t n, float size, float depth) :
+        m_n( n ),
+        m_size( size ),
+        m_depth( depth ){}
 
 
-        void FlatSquareAttributeGenerator::generate( 
+        void NPolyhedreonAttributeGenerator::generate( 
                     std::vector<vec4> &vertices,
                     std::vector<GLuint> &elements,
                     std::vector<vec4> &colors ) {
 
-            vertices= daveutils::generateNGon( 4, m_sideLength, m_sideLength );
-            elements = { 0, 1, 2, 3, 4, 5 ,6 ,7};
+            vertices= daveutils::generateNGon(m_n, m_size, m_depth);
             for (int i = 0; i < vertices.size(); i++) {
                 vec4 color;
                 color.x = daveutils::randomFloat( 0, 1);
@@ -207,24 +209,83 @@ namespace dgfx {
                 colors.push_back( color );
 
             }
+
+            // String the elements such that all triangles are outward facing.
+            // We'll start with the front and back faces
+            elements.resize( 2 * m_n);
+            for (int i = 0; i < m_n; i++) {
+                elements[i] = i;
+            }
+            for (int i = 0; i < m_n; i++) {
+                elements[ i + m_n ] = 2 * m_n - i - 1;
+            }
+
+           std::cout << daveutils::printVector( elements ) << std::endl;
+
+           // Now we connect the front and back faces by specifying the corners
+           // of a quad connecting each side of the front and back
+           for (int frontIdx = 0; frontIdx < m_n; frontIdx++ ) {
+
+               // Special case for last side
+               if (frontIdx == m_n - 1) {
+                   elements.push_back( frontIdx );
+                   elements.push_back( frontIdx + m_n );
+                   elements.push_back( frontIdx + 1 );
+                   elements.push_back( 0 );
+                   continue;
+               }
+                elements.push_back( frontIdx );
+                elements.push_back( frontIdx + m_n );
+                elements.push_back( frontIdx + m_n + 1 );
+                elements.push_back( frontIdx + 1 );
+           } 
+
+
+           std::cout << daveutils::printVector( elements ) << std::endl;
     }
 
-    const std::string Model::FLAT_3D_SHADER_NAME = "3d_model";
-    const std::string Model::WIREFRAME_SHADER_NAME = "3d_wireframe";
+    void NPolyhedreonAttributeGenerator::draw(
+            std::vector<vec4> &vertices,
+            std::vector<GLuint> &elements,
+            std::vector<vec4> &colors,
+            std::map<std::string, GLuint> &shaderMap) {
+        uint64_t elementOffset = 0;
+
+        // Draw the front and back faces
+        glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+        elementOffset += m_n;
+        glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+        elementOffset += m_n;
+
+        // Draw each connecting quad
+        for (int i = 0; i < m_n; i++ ) {
+            glDrawElements( GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+            elementOffset += 4;
+        }
+        
+
+    }
+
+    std::vector<std::string> NPolyhedreonAttributeGenerator::getShaderNames() { 
+        return std::vector<std::string> { WIREFRAME_SHADER_NAME };
+    }
+
+    const std::string NPolyhedreonAttributeGenerator::WIREFRAME_SHADER_NAME = "3d_wireframe";
     
 
     Model::Model( std::unique_ptr<AttributeGenerator> generator,
                  float x,
                  float y, 
                  float z) : 
+                    m_generator( std::move( generator )),
                     m_x(x),
                     m_y(y),
                     m_z(z) {
-            m_shaderNames.push_back( FLAT_3D_SHADER_NAME );
+            m_shaderNames = m_generator->getShaderNames();
 
             m_vertexBuffers.resize( 3 );
             m_vertexArrays.resize( 1 );
-            generator->generate( m_vertices, m_elements, m_colors );
+            m_generator->generate( m_vertices, m_elements, m_colors );
     }
 
     void Model::translate (float x, float y, float z) {
@@ -238,7 +299,7 @@ namespace dgfx {
     // Called by the scene to set up GL data structures
     void Model::init(std::map<std::string, GLuint>& shaderMap) {
 
-        GLuint mainShader = shaderMap[ FLAT_3D_SHADER_NAME ];
+        GLuint mainShader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
 
         glGenBuffers(3, &m_vertexBuffers[0]);
         glGenVertexArrays( 1, &m_vertexArrays[0]);
@@ -276,7 +337,7 @@ namespace dgfx {
 
     // Called by the scene to draw the object
     void Model::draw(std::map<std::string, GLuint>& shaderMap) {
-        GLuint shader = shaderMap[ FLAT_3D_SHADER_NAME ];
+        GLuint shader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
         // Set the model matrix uniform
         GLuint matrix_loc = glGetUniformLocation( shader, "model_matrix" );
 
@@ -284,8 +345,10 @@ namespace dgfx {
         //model
         glUniformMatrix4fv(matrix_loc,1, GL_TRUE, RotateY(m_yRot));
 
-        glDrawElements( GL_TRIANGLE_FAN, m_elements.size() / 2, GL_UNSIGNED_INT, BUFFER_OFFSET(0) );
-        glDrawElements( GL_TRIANGLE_FAN, m_elements.size() / 2, GL_UNSIGNED_INT, BUFFER_OFFSET((m_elements.size() / 2) * sizeof(GLuint)) );
+        glUseProgram( shader );
+        m_generator->draw( m_vertices, m_elements, m_colors, shaderMap );
+
+
 
     }
 

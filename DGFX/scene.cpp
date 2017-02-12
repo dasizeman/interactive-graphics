@@ -10,6 +10,7 @@ namespace dgfx {
     const std::string Scene::DEFAULT_WINDOW_NAME = "CS432";
     const std::string Scene::SHADER_PATH = "shaders/";
     const int Scene::DEFAULT_WINDOW_WIDTH = 500, Scene::DEFAULT_WINDOW_HEIGHT = 500;
+    const std::string Scene::FLAT_3D_SHADER_NAME = "3d_model";
 
     std::shared_ptr<Scene> Scene::m_instance = nullptr;
     
@@ -42,6 +43,9 @@ namespace dgfx {
         glutWMCloseFunc( &Scene::close_handler );
 
         glutTimerFunc( 1000/60, timer_callback_wrapper, 0);
+
+        // Load the global 3D shader
+        addShader( FLAT_3D_SHADER_NAME );
 
 
         glEnable (GL_DEPTH_TEST);

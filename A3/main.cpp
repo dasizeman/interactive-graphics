@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     Scene::m_instance = scene;
 
     // Create a cube
-    std::unique_ptr<AttributeGenerator> generator (new FlatSquareAttributeGenerator(0.5));
+    std::unique_ptr<AttributeGenerator> generator (new NPolyhedreonAttributeGenerator(6, 0.5, 1.0));
     scene->addEntity(std::unique_ptr<Entity>(new Model(std::move(generator), 0, 0, 0)));
 
     scene->start();

@@ -73,18 +73,32 @@ namespace dgfx {
                     std::vector<vec4> &vertices,
                     std::vector<GLuint> &elements,
                     std::vector<vec4> &colors ) = 0;
+            virtual void draw(
+                    std::vector<vec4> &vertices,
+                    std::vector<GLuint> &elements,
+                    std::vector<vec4> &colors,
+                    std::map<std::string, GLuint> &shaderMap) = 0;
+            virtual std::vector<std::string> getShaderNames() = 0;
 
     };
 
-    class FlatSquareAttributeGenerator : public AttributeGenerator {
+    class NPolyhedreonAttributeGenerator : public AttributeGenerator {
         private:
-            float m_sideLength;
+            float m_size, m_depth;
+            uint16_t m_n;
+            const static std::string WIREFRAME_SHADER_NAME;
         public:
-            FlatSquareAttributeGenerator(float sideLength);
-            virtual void generate( 
+            NPolyhedreonAttributeGenerator(uint16_t n, float size, float depth);
+            void generate( 
                     std::vector<vec4> &vertices,
                     std::vector<GLuint> &elements,
                     std::vector<vec4> &colors );
+            void draw(
+                    std::vector<vec4> &vertices,
+                    std::vector<GLuint> &elements,
+                    std::vector<vec4> &colors,
+                    std::map<std::string, GLuint> &shaderMap);
+            std::vector<std::string> getShaderNames();
 
     };
     
@@ -100,13 +114,13 @@ namespace dgfx {
             void rotate    (float x, float y, float z);
 
         private:
+            std::unique_ptr<AttributeGenerator> m_generator;
             std::vector<vec4> m_vertices, m_colors;
             std::vector<GLuint> m_elements;
             float m_x, m_y, m_z, m_xRot, m_yRot, m_zRot;
             vec4 m_frameColor;
         protected:
 
-        const static std::string FLAT_3D_SHADER_NAME, WIREFRAME_SHADER_NAME;
 
         // Called by the scene to set up GL data structures
         virtual void init(std::map<std::string, GLuint>& shaderMap);

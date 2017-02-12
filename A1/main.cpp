@@ -6,7 +6,7 @@
 #include <vector>
 #include <cmath>
 #include "Angel.h"  //includes gl.h, glut.h and other stuff...
-#include "daveutils.h"
+#include "daveutils.hpp"
 void m_glewInitAndVersion(void);  //pre-implementation declaration (could do in header file)
 void close(void);
 
