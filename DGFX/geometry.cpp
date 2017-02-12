@@ -257,7 +257,7 @@ namespace dgfx {
             m_shaderNames.push_back( WIREFRAME_SHADER_NAME );
 
             m_vertexBuffers.resize( 3 );
-            m_vertexArrays.resize( 1 );
+            m_vertexArrays.resize( 2 );
             generate( m_vertices, m_elements, m_colors );
     }
 
@@ -275,7 +275,7 @@ namespace dgfx {
         GLuint mainShader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
 
         glGenBuffers(3, &m_vertexBuffers[0]);
-        glGenVertexArrays( 1, &m_vertexArrays[0]);
+        glGenVertexArrays( 2, &m_vertexArrays[0]);
 
         glBindVertexArray( m_vertexArrays[0] );
 
@@ -298,6 +298,19 @@ namespace dgfx {
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_vertexBuffers[2] );
         glBufferData( GL_ELEMENT_ARRAY_BUFFER, m_elements.size() * sizeof(GLuint), &m_elements[0], GL_STATIC_DRAW );
 
+        // Set up the wireframe shader
+        ///*
+        GLuint wireframeShader = shaderMap[ WIREFRAME_SHADER_NAME ];
+        glBindVertexArray( m_vertexArrays[1] );
+        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );
+        vPositionLoc = glGetAttribLocation( wireframeShader, "vPosition" );
+        glEnableVertexAttribArray( vPositionLoc );
+        glVertexAttribPointer( vPositionLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_vertexBuffers[2] );
+        //*/
+
+
+
     }
     
     // Called by the scene to update GL state based on internal state
@@ -310,31 +323,62 @@ namespace dgfx {
 
     // Called by the scene to draw the object
     void Model::draw(std::map<std::string, GLuint>& shaderMap) {
-        GLuint shader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
+        GLuint mainShader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
+        GLuint wireframeShader = shaderMap[ WIREFRAME_SHADER_NAME ];
         // Set the model matrix uniform
-        GLuint matrix_loc = glGetUniformLocation( shader, "model_matrix" );
 
         //TODO generate model matrix here based on the current parameters of the
         //model
-        glUniformMatrix4fv(matrix_loc,1, GL_TRUE, RotateY(m_yRot));
 
-        glUseProgram( shader );
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
+        GLuint mainModelMatrix = glGetUniformLocation( mainShader, "model_matrix" );
+        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, RotateY(m_yRot));
+
+        glUseProgram( wireframeShader );
+        glBindVertexArray( m_vertexArrays[1] );
+        GLuint wireframeModelMatrix = glGetUniformLocation( wireframeShader, "model_matrix" );
+        glUniformMatrix4fv(wireframeModelMatrix,1, GL_TRUE, RotateY(m_yRot));
+        GLuint wireframeColorUniformLoc = glGetUniformLocation( wireframeShader, "wireColor" ); 
+        glUniform4fv( wireframeColorUniformLoc, 1, vec4(0, 0, 0, 1) ); 
 
         uint64_t elementOffset = 0;
 
         // Draw the front and back faces
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
         glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+
+
+        glUseProgram( wireframeShader );
+        glBindVertexArray( m_vertexArrays[1] );
+        glDrawElements( GL_LINE_LOOP, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+
         elementOffset += m_n;
+
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
         glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+
+
+        glUseProgram( wireframeShader );
+        glBindVertexArray( m_vertexArrays[1] );
+        glDrawElements( GL_LINE_LOOP, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+
         elementOffset += m_n;
 
         // Draw each connecting quad
         for (int i = 0; i < m_n; i++ ) {
+            glUseProgram( mainShader );
+            glBindVertexArray( m_vertexArrays[0] );
             glDrawElements( GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+            
+            glUseProgram( wireframeShader );
+            glBindVertexArray( m_vertexArrays[1] );
+            glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+
             elementOffset += 4;
         }
-
-
 
     }
 

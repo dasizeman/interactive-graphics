@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     Scene::m_instance = scene;
 
     // Create a cube
-    scene->addEntity(std::unique_ptr<Entity>(new Model(0, 0, 0, 6, 0.5, 1.0)));
+    scene->addEntity(std::unique_ptr<Entity>(new Model(0, 0, 0, 8, 0.5, 1.0)));
 
     scene->start();
 
