@@ -11,6 +11,7 @@ namespace dgfx {
     const std::string Scene::SHADER_PATH = "shaders/";
     const int Scene::DEFAULT_WINDOW_WIDTH = 500, Scene::DEFAULT_WINDOW_HEIGHT = 500;
     const std::string Scene::FLAT_3D_SHADER_NAME = "3d_model";
+    const std::string Scene::WIREFRAME_SHADER_NAME = "3d_wireframe";
 
     std::shared_ptr<Scene> Scene::m_instance = nullptr;
     
@@ -44,8 +45,9 @@ namespace dgfx {
 
         glutTimerFunc( 1000/60, timer_callback_wrapper, 0);
 
-        // Load the global 3D shader
+        // Load the global 3D shaders
         addShader( FLAT_3D_SHADER_NAME );
+        addShader( WIREFRAME_SHADER_NAME );
 
 
         glEnable (GL_DEPTH_TEST);
@@ -88,6 +90,7 @@ namespace dgfx {
     }
 
     void Scene::globalAnimationToggle() {
+         m_doAnimation = !m_doAnimation;
         for ( std::unique_ptr<Entity> &entity : m_entities )
             entity->m_doAnimation = m_doAnimation;
     }
@@ -224,6 +227,14 @@ namespace dgfx {
      
      void A3Scene::keyboardHandler(unsigned char key, int x, int y) {
          Scene::keyboardHandler( key, x, y );
+         switch ( key ) {
+             case ' ':
+                 globalAnimationToggle();
+             break;
+             case 'p':
+                m_camera.toggleProjectionMode();
+            break;
+         }
 
      }
      void A3Scene::specialKeyHandler(int key, int x, int y) {
@@ -233,7 +244,20 @@ namespace dgfx {
      void A3Scene::displayCallback() {
          // TODO we will need to insert the calls to update the view and
          // projection matrices here
-         
+        GLuint mainShader = m_shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
+        GLuint wireframeShader = m_shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
+
+        glUseProgram( mainShader );
+        GLuint mainProjMatrix = glGetUniformLocation( mainShader, "proj_matrix" );
+        glUniformMatrix4fv(mainProjMatrix,1, GL_TRUE, m_camera.m_projectionMatrix);
+        GLuint mainViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
+        glUniformMatrix4fv(mainViewMatrix,1, GL_TRUE, m_camera.m_viewMatrix);
+
+        glUseProgram( wireframeShader );
+        GLuint wireframeProjMatrix = glGetUniformLocation( wireframeShader, "proj_matrix" );
+        glUniformMatrix4fv(wireframeProjMatrix,1, GL_TRUE, m_camera.m_projectionMatrix);
+        GLuint wireframeViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
+        glUniformMatrix4fv(wireframeViewMatrix,1, GL_TRUE, m_camera.m_viewMatrix);
 
          Scene::displayCallback();
 

@@ -239,7 +239,6 @@ namespace dgfx {
     }
 
 
-    const std::string Model::WIREFRAME_SHADER_NAME = "3d_wireframe";
     
 
     Model::Model(float x,
@@ -254,7 +253,6 @@ namespace dgfx {
                     m_n(n),
                     m_size(size),
                     m_depth(depth){
-            m_shaderNames.push_back( WIREFRAME_SHADER_NAME );
 
             m_vertexBuffers.resize( 3 );
             m_vertexArrays.resize( 2 );
@@ -300,7 +298,7 @@ namespace dgfx {
 
         // Set up the wireframe shader
         ///*
-        GLuint wireframeShader = shaderMap[ WIREFRAME_SHADER_NAME ];
+        GLuint wireframeShader = shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
         glBindVertexArray( m_vertexArrays[1] );
         glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[0] );
         vPositionLoc = glGetAttribLocation( wireframeShader, "vPosition" );
@@ -315,6 +313,9 @@ namespace dgfx {
     
     // Called by the scene to update GL state based on internal state
     void Model::update(std::map<std::string, GLuint>& shaderMap) {
+        if (!m_doAnimation)
+            return;
+
         if ( m_yRot >= 360)
             m_yRot = 0;
         m_yRot += 2;
@@ -324,7 +325,7 @@ namespace dgfx {
     // Called by the scene to draw the object
     void Model::draw(std::map<std::string, GLuint>& shaderMap) {
         GLuint mainShader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
-        GLuint wireframeShader = shaderMap[ WIREFRAME_SHADER_NAME ];
+        GLuint wireframeShader = shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
         // Set the model matrix uniform
 
         //TODO generate model matrix here based on the current parameters of the
@@ -333,12 +334,12 @@ namespace dgfx {
         glUseProgram( mainShader );
         glBindVertexArray( m_vertexArrays[0] );
         GLuint mainModelMatrix = glGetUniformLocation( mainShader, "model_matrix" );
-        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, RotateY(m_yRot));
+        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, Translate( m_x, m_y, m_z ) * RotateY(m_yRot));
 
         glUseProgram( wireframeShader );
         glBindVertexArray( m_vertexArrays[1] );
         GLuint wireframeModelMatrix = glGetUniformLocation( wireframeShader, "model_matrix" );
-        glUniformMatrix4fv(wireframeModelMatrix,1, GL_TRUE, RotateY(m_yRot));
+        glUniformMatrix4fv(wireframeModelMatrix,1, GL_TRUE, Translate( m_x, m_y, m_z) * RotateY(m_yRot));
         GLuint wireframeColorUniformLoc = glGetUniformLocation( wireframeShader, "wireColor" ); 
         glUniform4fv( wireframeColorUniformLoc, 1, vec4(0, 0, 0, 1) ); 
 

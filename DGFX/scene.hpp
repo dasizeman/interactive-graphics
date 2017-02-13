@@ -8,13 +8,16 @@
 
 #include "Angel.h"
 #include "entity.hpp"
+#include "camera.hpp"
 
 namespace dgfx {
     class Scene {
     public:
         const static std::string FLAT_3D_SHADER_NAME;
+        const static std::string WIREFRAME_SHADER_NAME;
         static std::shared_ptr<Scene> m_instance;
     protected:
+        Camera m_camera;
         std::map<std::string, GLuint> m_shaderMap;
         std::vector<std::unique_ptr<Entity>> m_entities;
         bool m_doAnimation = false;

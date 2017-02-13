@@ -13,7 +13,8 @@ flat out vec4 color;
 
 void main() 
 { 
-  gl_Position = model_matrix * vPosition;
+  gl_Position = proj_matrix * view_matrix * model_matrix * vPosition;
+
   color = vColorIn;
 
 }

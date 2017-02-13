@@ -82,7 +82,6 @@ namespace dgfx {
             void rotate    (float x, float y, float z);
 
         private:
-            const static std::string WIREFRAME_SHADER_NAME;
             std::vector<vec4> m_vertices, m_colors;
             std::vector<GLuint> m_elements;
             float m_x, m_y, m_z, m_xRot, m_yRot, m_zRot;
