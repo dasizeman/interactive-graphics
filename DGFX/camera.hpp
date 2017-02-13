@@ -5,7 +5,7 @@ namespace dgfx {
 class Camera {
 
 private:
-    float m_eye, m_u, m_v, m_n;
+    vec4 m_eye, m_u, m_v, m_n;
     bool m_usePerspectiveProjection = false;
     void updateViewMatrix();
 

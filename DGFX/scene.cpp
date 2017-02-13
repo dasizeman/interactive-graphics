@@ -238,6 +238,24 @@ namespace dgfx {
 
      }
      void A3Scene::specialKeyHandler(int key, int x, int y) {
+         const float MOVE_SPEED = 0.25;
+         switch (key) {
+            case GLUT_KEY_UP:
+                m_camera.moveAlongAt( MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_DOWN:
+                m_camera.moveAlongAt( -MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_LEFT:
+                m_camera.moveAlongU( -MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_RIGHT:
+                m_camera.moveAlongU( MOVE_SPEED );
+            break;
+         }
 
      }
 

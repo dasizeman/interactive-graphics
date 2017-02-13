@@ -3,7 +3,11 @@
 namespace dgfx {
     Camera::Camera() {
         toggleProjectionMode();
-        m_viewMatrix = LookAt( vec4( 0,0,0,0), vec4(0,0,-1,0), vec4(0,1,0,0));
+        m_eye = vec4( 0, 0, 0, 0);
+        m_v = vec4( 0, 1, 0, 0);
+        m_n = vec4( 0, 0, 1, 0 );
+        m_u = normalize( cross(m_v,m_n) );
+        updateViewMatrix();
     }
 
     void Camera::toggleProjectionMode() {
@@ -24,10 +28,19 @@ namespace dgfx {
     }
 
 
-    void Camera::moveAlongAt( float amount ) {
+    void Camera::updateViewMatrix() {
+        m_viewMatrix = LookAt( m_eye, m_eye - m_n, m_v );
+    }
 
+
+    void Camera::moveAlongAt( float amount ) {
+        // This is moving along -n
+        m_eye -= amount * normalize(m_n);
+        updateViewMatrix();
     }
     void Camera::moveAlongU( float amount ) {
+        m_eye += amount * normalize(m_u);
+        updateViewMatrix();
 
     }
     void Camera::pitch( float amount ) {
