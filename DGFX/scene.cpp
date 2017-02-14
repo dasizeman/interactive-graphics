@@ -43,7 +43,8 @@ namespace dgfx {
         glutSpecialFunc( &Scene::special_key_wrapper );
         glutWMCloseFunc( &Scene::close_handler );
 
-        glutTimerFunc( 1000/60, timer_callback_wrapper, 0);
+        // 100 fps!
+        glutTimerFunc( 10, timer_callback_wrapper, 0);
 
         // Load the global 3D shaders
         addShader( FLAT_3D_SHADER_NAME );
@@ -227,13 +228,38 @@ namespace dgfx {
      
      void A3Scene::keyboardHandler(unsigned char key, int x, int y) {
          Scene::keyboardHandler( key, x, y );
+
+         const float ROTATION_SPEED = 0.1;
          switch ( key ) {
              case ' ':
                  globalAnimationToggle();
+
              break;
              case 'p':
                 m_camera.toggleProjectionMode();
+
+             case 'X':
+                m_camera.pitch( ROTATION_SPEED );
+             break;
+             case 'x':
+                m_camera.pitch( -ROTATION_SPEED );
             break;
+
+             case 'Z':
+                m_camera.roll( ROTATION_SPEED );
+             break;
+             case 'z':
+                m_camera.roll( -ROTATION_SPEED );
+             break;
+
+             case 'C':
+                m_camera.yaw( ROTATION_SPEED );
+             break;
+
+             case 'c':
+                m_camera.yaw( -ROTATION_SPEED );
+             break;
+
          }
 
      }

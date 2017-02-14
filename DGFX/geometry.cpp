@@ -318,7 +318,7 @@ namespace dgfx {
 
         if ( m_yRot >= 360)
             m_yRot = 0;
-        m_yRot += 2;
+        m_yRot += 1;
 
     }
 

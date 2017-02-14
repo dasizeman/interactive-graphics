@@ -44,12 +44,19 @@ namespace dgfx {
 
     }
     void Camera::pitch( float amount ) {
-
+        m_v = cos(amount)*m_v - sin(amount)*m_n;
+        m_n = sin(amount)*m_v + cos(amount)*m_n;
+        updateViewMatrix();
     }
     void Camera::roll( float amount ) {
+        m_v = cos(amount)*m_v - sin(amount)*m_u;
+        m_u = sin(amount)*m_v + cos(amount)*m_u;
+        updateViewMatrix();
 
     }
     void Camera::yaw( float amount ) {
-
+        m_u = cos(amount)*m_u - sin(amount)*m_n;
+        m_n = sin(amount)*m_u + cos(amount)*m_n;
+        updateViewMatrix();
     }
 }
