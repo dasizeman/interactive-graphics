@@ -8,6 +8,7 @@ namespace dgfx {
         m_n = vec4( 0, 0, 1, 0 );
         m_u = normalize( cross(m_v,m_n) );
         updateViewMatrix();
+        std::cout << "Camera constructor" << std::endl;
     }
 
     void Camera::toggleProjectionMode() {
@@ -44,19 +45,22 @@ namespace dgfx {
 
     }
     void Camera::pitch( float amount ) {
-        m_v = cos(amount)*m_v - sin(amount)*m_n;
-        m_n = sin(amount)*m_v + cos(amount)*m_n;
+        vec4 old_v = m_v;
+        m_v = cos(amount)*old_v - sin(amount)*m_n;
+        m_n = sin(amount)*old_v + cos(amount)*m_n;
         updateViewMatrix();
     }
     void Camera::roll( float amount ) {
-        m_v = cos(amount)*m_v - sin(amount)*m_u;
-        m_u = sin(amount)*m_v + cos(amount)*m_u;
+        vec4 old_v = m_v;
+        m_v = cos(amount)*old_v - sin(amount)*m_u;
+        m_u = sin(amount)*old_v + cos(amount)*m_u;
         updateViewMatrix();
 
     }
     void Camera::yaw( float amount ) {
-        m_u = cos(amount)*m_u - sin(amount)*m_n;
-        m_n = sin(amount)*m_u + cos(amount)*m_n;
+        vec4 old_u = m_u;
+        m_u = cos(amount)*old_u - sin(amount)*m_n;
+        m_n = sin(amount)*old_u + cos(amount)*m_n;
         updateViewMatrix();
     }
 }

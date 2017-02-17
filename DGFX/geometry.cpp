@@ -337,6 +337,7 @@ namespace dgfx {
         glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, Translate( m_x, m_y, m_z ) * RotateY(m_yRot));
 
         glUseProgram( wireframeShader );
+        glEnable( GL_LINE_SMOOTH );
         glBindVertexArray( m_vertexArrays[1] );
         GLuint wireframeModelMatrix = glGetUniformLocation( wireframeShader, "model_matrix" );
         glUniformMatrix4fv(wireframeModelMatrix,1, GL_TRUE, Translate( m_x, m_y, m_z) * RotateY(m_yRot));

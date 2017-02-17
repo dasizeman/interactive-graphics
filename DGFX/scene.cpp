@@ -237,6 +237,7 @@ namespace dgfx {
              break;
              case 'p':
                 m_camera.toggleProjectionMode();
+             break;
 
              case 'X':
                 m_camera.pitch( ROTATION_SPEED );
