@@ -239,7 +239,16 @@ namespace dgfx {
     }
 
 
-    
+    Model::Model( float x,
+                  float y,
+                  float z ) :
+        m_x( x ),
+        m_y( y ),
+        m_z( z ){
+
+        m_vertexBuffers.resize( 3 );
+        m_vertexArrays.resize( 2 );
+    }
 
     Model::Model(float x,
                  float y, 
@@ -247,16 +256,12 @@ namespace dgfx {
                  uint16_t n,
                  float size,
                  float depth) : 
-                    m_x(x),
-                    m_y(y),
-                    m_z(z),
-                    m_n(n),
-                    m_size(size),
-                    m_depth(depth){
+                 Model( x, y, z ) {
 
-            m_vertexBuffers.resize( 3 );
-            m_vertexArrays.resize( 2 );
-            generate( m_vertices, m_elements, m_colors );
+        m_n = n;
+        m_size = size;
+        m_depth = depth;
+        generate( m_vertices, m_elements, m_colors );
     }
 
     void Model::translate (float x, float y, float z) {
@@ -394,4 +399,52 @@ namespace dgfx {
     void Model::specialKeyHandler(int key, int x, int y) {
 
     }
+
+    // ----- RecursiveSphere -----
+    
+    RecursiveSphere::RecursiveSphere( float x,
+                         float y,
+                         float z,
+                         uint16_t numRecursions ) : 
+                         Model( x, y, z ){
+        m_recursionDepth = numRecursions;
+    }
+
+
+    point4 RecursiveSphere::unit( const point4 &p ) {
+        return point4();
+
+    }
+
+    void RecursiveSphere::triangle( const point4& a, 
+                       const point4& b, 
+                       const point4& c ) {
+
+    }
+
+    void RecursiveSphere::tetrahedron( int count ) {
+
+    }
+
+    void RecursiveSphere::divide_triangle( const point4 &a, 
+                              const point4 &b,
+                              const point4 &c,
+                              int count ) {
+
+    }
+
+    void RecursiveSphere::generate( 
+                std::vector<vec4> &vertices,
+                std::vector<GLuint> &elements,
+                std::vector<vec4> &colors ) {
+
+    }
+
+
+        // Called by the scene to draw the object
+    void RecursiveSphere::draw(std::map<std::string, GLuint>& shaderMap) {
+
+    }
+
+
 }

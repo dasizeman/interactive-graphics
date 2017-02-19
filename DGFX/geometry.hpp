@@ -2,7 +2,9 @@
 #define __DGFX_GEOMETRY_H__
 #include "mat.h"
 #include "entity.hpp"
+#include "Angel.h"
 namespace dgfx {
+    typedef vec4 point4;
 
     // 2D stuff
 	
@@ -72,6 +74,10 @@ namespace dgfx {
 
         public:
             Model( float x,
+                   float y,
+                   float z );
+
+            Model( float x,
                      float y, 
                      float z,
                      uint16_t n,
@@ -89,7 +95,7 @@ namespace dgfx {
             float m_size, m_depth;
             uint16_t m_n;
         protected:
-        void generate( 
+        virtual void generate( 
                 std::vector<vec4> &vertices,
                 std::vector<GLuint> &elements,
                 std::vector<vec4> &colors );
@@ -108,6 +114,42 @@ namespace dgfx {
         virtual void keyboardHandler(unsigned char key, int x, int y);
         virtual void clickHandler(GLint button, GLint state, GLint x, GLint y);
         virtual void specialKeyHandler(int key, int x, int y);
+    };
+
+    class RecursiveSphere : public Model {
+    public:
+        RecursiveSphere( float x,
+                         float y,
+                         float z,
+                         uint16_t numRecursions );
+
+    private:
+        uint16_t m_recursionDepth;
+
+        point4 unit( const point4 &p );
+
+        void triangle( const point4& a, 
+                       const point4& b, 
+                       const point4& c );
+
+        void tetrahedron( int count );
+
+        void divide_triangle( const point4 &a, 
+                              const point4 &b,
+                              const point4 &c,
+                              int count );
+
+    protected:
+        void generate( 
+                std::vector<vec4> &vertices,
+                std::vector<GLuint> &elements,
+                std::vector<vec4> &colors );
+
+
+        // Called by the scene to draw the object
+        void draw(std::map<std::string, GLuint>& shaderMap);
+
+
     };
     
 }
