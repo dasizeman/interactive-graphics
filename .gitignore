@@ -2,3 +2,5 @@
 *.swp
 build/
 Makefile
+.DS_Store
+Main
