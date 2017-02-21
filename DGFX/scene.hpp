@@ -10,6 +10,8 @@
 #include "entity.hpp"
 #include "camera.hpp"
 
+#define FPS 100
+
 namespace dgfx {
     class Scene {
     public:

@@ -320,7 +320,8 @@ namespace dgfx {
 
         if ( m_yRot >= 360)
             m_yRot = 0;
-        m_yRot += 1;
+        float deg = daveutils::randomFloat( 1, 180);
+        m_yRot += deg * sin(deg * .001) * 360 ;
 
     }
 
@@ -494,5 +495,43 @@ namespace dgfx {
 
     }
 
+    // ----- FloorPlane -----
+    
+    FloorPlane::FloorPlane( uint16_t sideLength, vec4 color) : 
+        Model( 0, 0, 0 ),
+        m_sideLength( sideLength ),
+        m_color ( color ) {
+        
+        generate();
+    }
+
+    void FloorPlane::generate() {
+        m_vertices.push_back( vec4( -m_sideLength / 2, 0,  m_sideLength / 2, 1 ) ); 
+        m_colors.push_back( m_color );
+
+        m_vertices.push_back( vec4( -m_sideLength / 2, 0, -m_sideLength / 2, 1 ) );
+        m_colors.push_back( m_color );
+
+        m_vertices.push_back( vec4( m_sideLength / 2, 0, -m_sideLength / 2, 1 ) );
+        m_colors.push_back( m_color );
+
+        m_vertices.push_back( vec4( m_sideLength / 2, 0, m_sideLength / 2, 1 ) );
+        m_colors.push_back( m_color );
+    }
+
+
+    // Called by the scene to draw the object
+    void FloorPlane::draw(std::map<std::string, GLuint>& shaderMap) {
+        GLuint mainShader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
+        GLuint wireframeShader = shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
+
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
+        GLuint mainModelMatrix = glGetUniformLocation( mainShader, "model_matrix" );
+        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, Translate( m_x, m_y, m_z ) * RotateY(m_yRot));
+
+        glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
+
+    }
 
 }

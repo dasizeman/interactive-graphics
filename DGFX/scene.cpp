@@ -44,7 +44,7 @@ namespace dgfx {
         glutWMCloseFunc( &Scene::close_handler );
 
         // 100 fps!
-        glutTimerFunc( 10, timer_callback_wrapper, 0);
+        glutTimerFunc( 1000, timer_callback_wrapper, 0);
 
         // Load the global 3D shaders
         addShader( FLAT_3D_SHADER_NAME );
@@ -160,7 +160,7 @@ namespace dgfx {
 
      void Scene::timer_callback_wrapper( int value ) {
         Scene::m_instance->timerCallback( value );
-        glutTimerFunc( 1000/60, timer_callback_wrapper, 0 );
+        glutTimerFunc( 1000/FPS, timer_callback_wrapper, 0 );
         glutPostRedisplay();
      }
 
@@ -338,6 +338,10 @@ namespace dgfx {
 
          const float ROTATION_SPEED = 0.1;
          switch ( key ) {
+             case 'r':
+                 globalAnimationToggle();
+                 break;
+
              case ' ':
                  if ( m_activeCamera->m_id == 0 )
                      m_activeCamera = m_cameras[1];

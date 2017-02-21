@@ -146,6 +146,21 @@ namespace dgfx {
 
 
     };
+
+    class FloorPlane : public Model {
+    public:
+        FloorPlane( uint16_t sideLength, vec4 color );
+    private:
+        uint16_t m_sideLength;
+        vec4 m_color;
+    protected:
+        void generate();
+
+
+        // Called by the scene to draw the object
+        void draw(std::map<std::string, GLuint>& shaderMap);
+
+    };
     
 }
 
