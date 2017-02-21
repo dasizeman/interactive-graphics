@@ -88,17 +88,15 @@ namespace dgfx {
             void rotate    (float x, float y, float z);
 
         private:
-            std::vector<vec4> m_vertices, m_colors;
-            std::vector<GLuint> m_elements;
-            float m_x, m_y, m_z, m_xRot, m_yRot, m_zRot;
-            vec4 m_frameColor;
-            float m_size, m_depth;
-            uint16_t m_n;
+        float m_size, m_depth;
+        uint16_t m_n;
+
         protected:
-        virtual void generate( 
-                std::vector<vec4> &vertices,
-                std::vector<GLuint> &elements,
-                std::vector<vec4> &colors );
+        std::vector<vec4> m_vertices, m_colors;
+        std::vector<GLuint> m_elements;
+        float m_x, m_y, m_z, m_xRot, m_yRot, m_zRot;
+        vec4 m_frameColor;
+        virtual void generate();
 
 
         // Called by the scene to set up GL data structures
@@ -140,10 +138,7 @@ namespace dgfx {
                               int count );
 
     protected:
-        void generate( 
-                std::vector<vec4> &vertices,
-                std::vector<GLuint> &elements,
-                std::vector<vec4> &colors );
+        void generate();
 
 
         // Called by the scene to draw the object

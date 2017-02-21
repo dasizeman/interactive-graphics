@@ -187,34 +187,31 @@ namespace dgfx {
     // ------------------------------------
     //
     //
-        void Model::generate( 
-                    std::vector<vec4> &vertices,
-                    std::vector<GLuint> &elements,
-                    std::vector<vec4> &colors ) {
+        void Model::generate() {
 
-            vertices= daveutils::generateNGon(m_n, m_size, m_depth);
-            for (int i = 0; i < vertices.size(); i++) {
+            m_vertices= daveutils::generateNGon(m_n, m_size, m_depth);
+            for (int i = 0; i < m_vertices.size(); i++) {
                 vec4 color;
                 color.x = daveutils::randomFloat( 0, 1);
                 color.y = daveutils::randomFloat( 0, 1);
                 color.z = daveutils::randomFloat( 0, 1);
                 color.w = 1;
 
-                colors.push_back( color );
+                m_colors.push_back( color );
 
             }
 
             // String the elements such that all triangles are outward facing.
             // We'll start with the front and back faces
-            elements.resize( 2 * m_n);
+            m_elements.resize( 2 * m_n);
             for (int i = 0; i < m_n; i++) {
-                elements[i] = i;
+                m_elements[i] = i;
             }
             for (int i = 0; i < m_n; i++) {
-                elements[ i + m_n ] = 2 * m_n - i - 1;
+                m_elements[ i + m_n ] = 2 * m_n - i - 1;
             }
 
-           std::cout << daveutils::printVector( elements ) << std::endl;
+           std::cout << daveutils::printVector( m_elements ) << std::endl;
 
            // Now we connect the front and back faces by specifying the corners
            // of a quad connecting each side of the front and back
@@ -222,20 +219,20 @@ namespace dgfx {
 
                // Special case for last side
                if (frontIdx == m_n - 1) {
-                   elements.push_back( frontIdx );
-                   elements.push_back( frontIdx + m_n );
-                   elements.push_back( frontIdx + 1 );
-                   elements.push_back( 0 );
+                   m_elements.push_back( frontIdx );
+                   m_elements.push_back( frontIdx + m_n );
+                   m_elements.push_back( frontIdx + 1 );
+                   m_elements.push_back( 0 );
                    continue;
                }
-                elements.push_back( frontIdx );
-                elements.push_back( frontIdx + m_n );
-                elements.push_back( frontIdx + m_n + 1 );
-                elements.push_back( frontIdx + 1 );
+                m_elements.push_back( frontIdx );
+                m_elements.push_back( frontIdx + m_n );
+                m_elements.push_back( frontIdx + m_n + 1 );
+                m_elements.push_back( frontIdx + 1 );
            } 
 
 
-           std::cout << daveutils::printVector( elements ) << std::endl;
+           std::cout << daveutils::printVector( m_elements ) << std::endl;
     }
 
 
@@ -261,7 +258,7 @@ namespace dgfx {
         m_n = n;
         m_size = size;
         m_depth = depth;
-        generate( m_vertices, m_elements, m_colors );
+        generate();
     }
 
     void Model::translate (float x, float y, float z) {
@@ -408,11 +405,20 @@ namespace dgfx {
                          uint16_t numRecursions ) : 
                          Model( x, y, z ){
         m_recursionDepth = numRecursions;
+        generate();
     }
 
 
     point4 RecursiveSphere::unit( const point4 &p ) {
-        return point4();
+        float len = p.x*p.x + p.y*p.y + p.z*p.z;
+        
+        point4 t;
+        if ( len > DivideByZeroTolerance ) {
+            t = p / sqrt(len);
+            t.w = 1.0;
+        }
+
+        return t;
 
     }
 
@@ -420,9 +426,23 @@ namespace dgfx {
                        const point4& b, 
                        const point4& c ) {
 
+        m_vertices.push_back( a );
+        m_vertices.push_back( b );
+        m_vertices.push_back( c );
     }
 
     void RecursiveSphere::tetrahedron( int count ) {
+        point4 v[4] = {
+            vec4( 0.0, 0.0, 1.0, 1.0 ),
+            vec4( 0.0, 0.942809, -0.333333, 1.0 ),
+            vec4( -0.816497, -0.471405, -0.333333, 1.0 ),
+            vec4( 0.816497, -0.471405, -0.333333, 1.0 )
+        };
+
+        divide_triangle( v[0], v[1], v[2], count );
+        divide_triangle( v[3], v[2], v[1], count );
+        divide_triangle( v[0], v[3], v[1], count );
+        divide_triangle( v[0], v[2], v[3], count );
 
     }
 
@@ -430,19 +450,47 @@ namespace dgfx {
                               const point4 &b,
                               const point4 &c,
                               int count ) {
+        if ( count > 0 ) {
+            point4 v1 = unit( a + b );
+            point4 v2 = unit( a + c );
+            point4 v3 = unit( b + c );
+            divide_triangle(  a, v1, v2, count - 1 );
+            divide_triangle(  c, v2, v3, count - 1 );
+            divide_triangle(  b, v3, v1, count - 1 );
+            divide_triangle( v1, v3, v2, count - 1 );
+        }
+        else {
+            triangle( a, b, c );
+        }
 
     }
 
-    void RecursiveSphere::generate( 
-                std::vector<vec4> &vertices,
-                std::vector<GLuint> &elements,
-                std::vector<vec4> &colors ) {
+    void RecursiveSphere::generate() {
+        tetrahedron( m_recursionDepth );
+        for( int i = 0; i < m_vertices.size(); i++ ) {
+            vec4 color;
+            color.x = daveutils::randomFloat( 0, 1 );
+            color.y = daveutils::randomFloat( 0, 1 );
+            color.z = daveutils::randomFloat( 0, 1 );
+            color.w = 1;
+
+            m_colors.push_back( color );
+        }
 
     }
 
 
         // Called by the scene to draw the object
     void RecursiveSphere::draw(std::map<std::string, GLuint>& shaderMap) {
+        GLuint mainShader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
+        GLuint wireframeShader = shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
+
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
+        GLuint mainModelMatrix = glGetUniformLocation( mainShader, "model_matrix" );
+        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, Translate( m_x, m_y, m_z ) * RotateY(m_yRot));
+
+        glDrawArrays( GL_TRIANGLES, 0, m_vertices.size() );
 
     }
 

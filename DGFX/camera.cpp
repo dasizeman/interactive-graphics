@@ -1,14 +1,17 @@
 #include "camera.hpp"
 
 namespace dgfx {
-    Camera::Camera() {
+    Camera::Camera( uint16_t id,
+                    vec4 eye,
+                    vec4 at,
+                    vec4 up)  :
+                    m_id( id ),
+                    m_eye( eye ),
+                    m_n( -at ),
+                    m_v( up ){
         toggleProjectionMode();
-        m_eye = vec4( 0, 0, 0, 0);
-        m_v = vec4( 0, 1, 0, 0);
-        m_n = vec4( 0, 0, 1, 0 );
         m_u = normalize( cross(m_v,m_n) );
         updateViewMatrix();
-        std::cout << "Camera constructor" << std::endl;
     }
 
     void Camera::toggleProjectionMode() {

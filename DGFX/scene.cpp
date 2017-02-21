@@ -226,6 +226,14 @@ namespace dgfx {
 
      // ----- A3 Scene -----
      
+     A3Scene::A3Scene() : Scene() {
+        m_cameras.push_back( std::shared_ptr<Camera>( new Camera ( 0,
+                    vec4( 0,0,0,0 ),
+                    vec4( 0,0,-1,0),
+                    vec4( 0,1,0,0) )));
+        m_activeCamera = m_cameras[0];
+     }
+     
      void A3Scene::keyboardHandler(unsigned char key, int x, int y) {
          Scene::keyboardHandler( key, x, y );
 
@@ -236,29 +244,29 @@ namespace dgfx {
 
              break;
              case 'p':
-                m_camera.toggleProjectionMode();
+                m_activeCamera->toggleProjectionMode();
              break;
 
              case 'X':
-                m_camera.pitch( ROTATION_SPEED );
+                m_activeCamera->pitch( ROTATION_SPEED );
              break;
              case 'x':
-                m_camera.pitch( -ROTATION_SPEED );
+                m_activeCamera->pitch( -ROTATION_SPEED );
             break;
 
              case 'Z':
-                m_camera.roll( ROTATION_SPEED );
+                m_activeCamera->roll( ROTATION_SPEED );
              break;
              case 'z':
-                m_camera.roll( -ROTATION_SPEED );
+                m_activeCamera->roll( -ROTATION_SPEED );
              break;
 
              case 'C':
-                m_camera.yaw( ROTATION_SPEED );
+                m_activeCamera->yaw( ROTATION_SPEED );
              break;
 
              case 'c':
-                m_camera.yaw( -ROTATION_SPEED );
+                m_activeCamera->yaw( -ROTATION_SPEED );
              break;
 
          }
@@ -268,43 +276,150 @@ namespace dgfx {
          const float MOVE_SPEED = 0.25;
          switch (key) {
             case GLUT_KEY_UP:
-                m_camera.moveAlongAt( MOVE_SPEED );
+                m_activeCamera->moveAlongAt( MOVE_SPEED );
             break;
 
             case GLUT_KEY_DOWN:
-                m_camera.moveAlongAt( -MOVE_SPEED );
+                m_activeCamera->moveAlongAt( -MOVE_SPEED );
             break;
 
             case GLUT_KEY_LEFT:
-                m_camera.moveAlongU( -MOVE_SPEED );
+                m_activeCamera->moveAlongU( -MOVE_SPEED );
             break;
 
             case GLUT_KEY_RIGHT:
-                m_camera.moveAlongU( MOVE_SPEED );
+                m_activeCamera->moveAlongU( MOVE_SPEED );
             break;
          }
 
      }
 
      void A3Scene::displayCallback() {
-         // TODO we will need to insert the calls to update the view and
-         // projection matrices here
         GLuint mainShader = m_shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
         GLuint wireframeShader = m_shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
 
         glUseProgram( mainShader );
         GLuint mainProjMatrix = glGetUniformLocation( mainShader, "proj_matrix" );
-        glUniformMatrix4fv(mainProjMatrix,1, GL_TRUE, m_camera.m_projectionMatrix);
+        glUniformMatrix4fv(mainProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
         GLuint mainViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
-        glUniformMatrix4fv(mainViewMatrix,1, GL_TRUE, m_camera.m_viewMatrix);
+        glUniformMatrix4fv(mainViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
 
         glUseProgram( wireframeShader );
         GLuint wireframeProjMatrix = glGetUniformLocation( wireframeShader, "proj_matrix" );
-        glUniformMatrix4fv(wireframeProjMatrix,1, GL_TRUE, m_camera.m_projectionMatrix);
+        glUniformMatrix4fv(wireframeProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
         GLuint wireframeViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
-        glUniformMatrix4fv(wireframeViewMatrix,1, GL_TRUE, m_camera.m_viewMatrix);
+        glUniformMatrix4fv(wireframeViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
 
          Scene::displayCallback();
 
      }
+
+     // ----- A4Scene -----
+     
+     A4Scene::A4Scene() : Scene() {
+        // Create cameras
+        m_cameras.push_back( std::shared_ptr<Camera> ( new Camera (
+                    0,
+                    vec4( 0, 2, 0, 0 ),
+                    vec4( 0, 0, -1, 0 ),
+                    vec4( 0, 1, 0, 0 ) ) ) );
+
+        m_cameras.push_back( std::shared_ptr<Camera> ( new Camera (
+                    1,
+                    vec4( 0, 10, 0, 0),
+                    vec4( 0, -1, 0, 0),
+                    vec4( 0, 0, -1, 0) ) ) );
+
+        m_activeCamera = m_cameras[0];
+     }
+     
+     void A4Scene::keyboardHandler(unsigned char key, int x, int y) {
+         Scene::keyboardHandler( key, x, y );
+
+         const float ROTATION_SPEED = 0.1;
+         switch ( key ) {
+             case ' ':
+                 if ( m_activeCamera->m_id == 0 )
+                     m_activeCamera = m_cameras[1];
+                 else
+                     m_activeCamera = m_cameras[0];
+
+             break;
+             case 'p':
+                m_activeCamera->toggleProjectionMode();
+             break;
+
+             case 'X':
+                m_activeCamera->pitch( ROTATION_SPEED );
+             break;
+             case 'x':
+                m_activeCamera->pitch( -ROTATION_SPEED );
+            break;
+
+             case 'Z':
+                m_activeCamera->roll( ROTATION_SPEED );
+             break;
+             case 'z':
+                m_activeCamera->roll( -ROTATION_SPEED );
+             break;
+
+             case 'C':
+                m_activeCamera->yaw( ROTATION_SPEED );
+             break;
+
+             case 'c':
+                m_activeCamera->yaw( -ROTATION_SPEED );
+             break;
+
+         }
+
+     }
+
+     void A4Scene::specialKeyHandler(int key, int x, int y) {
+         const float MOVE_SPEED = 0.25;
+
+         switch (key) {
+            case GLUT_KEY_UP:
+                m_activeCamera->moveAlongAt( MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_DOWN:
+                m_activeCamera->moveAlongAt( -MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_LEFT:
+                m_activeCamera->moveAlongU( -MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_RIGHT:
+                m_activeCamera->moveAlongU( MOVE_SPEED );
+            break;
+         }
+
+     }
+
+     void A4Scene::clickHandler(GLint button, GLint state, GLint x, GLint y) {
+
+     }
+
+     void A4Scene::displayCallback() {
+        GLuint mainShader = m_shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
+        GLuint wireframeShader = m_shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
+
+        glUseProgram( mainShader );
+        GLuint mainProjMatrix = glGetUniformLocation( mainShader, "proj_matrix" );
+        glUniformMatrix4fv(mainProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
+        GLuint mainViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
+        glUniformMatrix4fv(mainViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
+
+        glUseProgram( wireframeShader );
+        GLuint wireframeProjMatrix = glGetUniformLocation( wireframeShader, "proj_matrix" );
+        glUniformMatrix4fv(wireframeProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
+        GLuint wireframeViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
+        glUniformMatrix4fv(wireframeViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
+
+        Scene::displayCallback();
+
+     }
+
 }

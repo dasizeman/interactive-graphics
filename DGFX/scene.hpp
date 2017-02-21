@@ -17,7 +17,8 @@ namespace dgfx {
         const static std::string WIREFRAME_SHADER_NAME;
         static std::shared_ptr<Scene> m_instance;
     protected:
-        Camera m_camera;
+        std::vector<std::shared_ptr<Camera>> m_cameras;
+        std::shared_ptr<Camera> m_activeCamera;
         std::map<std::string, GLuint> m_shaderMap;
         std::vector<std::unique_ptr<Entity>> m_entities;
         bool m_doAnimation = false;
@@ -66,11 +67,27 @@ namespace dgfx {
 
     class A3Scene : public Scene {
 
+    public:
+        A3Scene();
+
+
+    protected:
 	 void keyboardHandler(unsigned char key, int x, int y);
          void specialKeyHandler(int key, int x, int y);
 
 	 void displayCallback();
 
+    };
+
+    class A4Scene : public Scene {
+    public:
+        A4Scene();
+
+    protected:
+	 void keyboardHandler(unsigned char key, int x, int y);
+         void specialKeyHandler(int key, int x, int y);
+	 void displayCallback();
+	 void clickHandler(GLint button, GLint state, GLint x, GLint y);
     };
 
 

@@ -10,7 +10,8 @@ private:
     void updateViewMatrix();
 
 public:
-    Camera();
+    Camera(uint16_t id, vec4 eye, vec4 at, vec4 up);
+    uint16_t m_id;
 
     mat4 m_viewMatrix;
     mat4 m_projectionMatrix;
