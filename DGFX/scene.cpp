@@ -446,17 +446,22 @@ namespace dgfx {
 
      // Pick a triangle based on click coordinates and turn it black
      void A4Scene::pickTriangle( uint16_t x, uint16_t y ) {
+         float xFloat = static_cast<float>(x);
+         float yFloat = static_cast<float>(y);
 
          // First we calculate where the clicked point is on the front of the
          // canonical view volume
-         vec4 canonicalPt ( 2 * (x / m_screenWidth) - 1,
-                            1 - 2 * (y / m_screenHeight),
+         vec4 canonicalPt ( 2 * (xFloat / m_screenWidth) - 1,
+                            1 - 2 * (yFloat / m_screenHeight),
                             -1,
                             1 );
 
+         std::cout << "canonical: " << canonicalPt << std::endl;
+
          // Now we undo the perspective projection
-         float t = m_activeCamera->m_near * tan( m_activeCamera->m_fov / 2 );
+         float t = m_activeCamera->m_near * tan( ((M_PI / 180)  * m_activeCamera->m_fov) / 2) ;
          float r = t * m_activeCamera->m_aspect;
+         std::cout << "r: " << r << std::endl;
 
          vec4 noPerspective ( r * canonicalPt.x,
                               t * canonicalPt.y,
@@ -471,6 +476,8 @@ namespace dgfx {
 
          // Now we can get the click ray in world coordinates
          vec3 worldRay = FourDto3d( worldPt - m_activeCamera->m_eye );
+
+         std::cout << "worldRay: " << worldRay << std::endl;
 
          // We now go through every triangle in the scene to see if our ray
          // intersects it
@@ -490,7 +497,7 @@ namespace dgfx {
                  float t = rayIntersectsPlane( worldRay, E, F, G );
                  if ( t > 0) {
                     vec3 intersectPt = FourDto3d( m_activeCamera->m_eye ) + t * worldRay;
-                    if ( insideTest( E, F, G, intersectPt ) )
+                    //if ( insideTest( E, F, G, intersectPt ) )
                         sphere->blackenTriangle( triangleIdx );
                  }
 
@@ -518,7 +525,7 @@ namespace dgfx {
          float dot2 = dot( cross( g - f, point - f ), N );
          float dot3 = dot( cross( e - g, point - g ), N );
 
-         std::cout << dot1 << "," << dot2 << "," << dot3 << std::endl;
+         //std::cout << dot1 << "," << dot2 << "," << dot3 << std::endl;
 
          return dot1 >= 0 && dot2 >= 0 && dot3 >= 0;
 

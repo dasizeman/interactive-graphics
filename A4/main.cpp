@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
     // init and callback hooking inside the scene class
     Scene::m_instance = scene;
 
-    scene->addEntity(std::unique_ptr<Entity>(new RecursiveSphere(0, 1, -4, 5)));
+    scene->addEntity(std::unique_ptr<Entity>(new RecursiveSphere(0, 1, -4, 1)));
     scene->addEntity(std::unique_ptr<Entity>(new FloorPlane( 100, vec4(0, 1, 0, 1))));
 
     scene->start();
