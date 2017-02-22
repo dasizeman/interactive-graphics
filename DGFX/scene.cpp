@@ -456,12 +456,9 @@ namespace dgfx {
                             -1,
                             1 );
 
-         std::cout << "canonical: " << canonicalPt << std::endl;
-
          // Now we undo the perspective projection
          float t = m_activeCamera->m_near * tan( ((M_PI / 180)  * m_activeCamera->m_fov) / 2) ;
          float r = t * m_activeCamera->m_aspect;
-         std::cout << "r: " << r << std::endl;
 
          vec4 noPerspective ( r * canonicalPt.x,
                               t * canonicalPt.y,
@@ -477,8 +474,6 @@ namespace dgfx {
          // Now we can get the click ray in world coordinates
          vec3 worldRay = FourDto3d( worldPt - m_activeCamera->m_eye );
 
-         std::cout << "worldRay: " << worldRay << std::endl;
-
          // We now go through every triangle in the scene to see if our ray
          // intersects it
          for ( std::unique_ptr<Entity> &entity : m_entities ) {
@@ -488,7 +483,7 @@ namespace dgfx {
                 continue;
 
 
-             for ( uint16_t triangleIdx = 0; triangleIdx < sphere->m_vertices.size() - 2; triangleIdx += 3 ) {
+             for ( uint16_t triangleIdx = 0; triangleIdx < sphere->m_vertices.size(); triangleIdx += 3 ) {
                  vec3 E = FourDto3d( sphere->m_vertices[ triangleIdx ] );
                  vec3 F = FourDto3d( sphere->m_vertices[ triangleIdx + 1 ] );
                  vec3 G = FourDto3d( sphere->m_vertices[ triangleIdx + 2 ] );
@@ -497,7 +492,7 @@ namespace dgfx {
                  float t = rayIntersectsPlane( worldRay, E, F, G );
                  if ( t > 0) {
                     vec3 intersectPt = FourDto3d( m_activeCamera->m_eye ) + t * worldRay;
-                    //if ( insideTest( E, F, G, intersectPt ) )
+                    if ( insideTest( E, F, G, intersectPt ) )
                         sphere->blackenTriangle( triangleIdx );
                  }
 

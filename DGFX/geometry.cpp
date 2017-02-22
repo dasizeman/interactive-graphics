@@ -308,6 +308,17 @@ namespace dgfx {
         glVertexAttribPointer( vPositionLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_vertexBuffers[2] );
         //*/
+        
+
+        // Generate the model matrix.  We also need to apply it to our in-memory
+        // vertex data for the sake of collision detection
+        // TODO WARNING!! This is not the right way to do this, as if we ever
+        // copy the vertex data to the gpu this transformation will stick!!
+        mat4 modelMatrix = Translate(m_x, m_y, m_z );
+        for ( int i = 0; i < m_vertices.size(); i++ ) {
+            vec4 oldVertex = m_vertices[ i ];
+            m_vertices[ i ] = modelMatrix * oldVertex;
+        }
 
 
 
@@ -321,6 +332,18 @@ namespace dgfx {
         if ( m_yRot >= 360)
             m_yRot = 0;
         m_yRot += 1;
+
+        // Generate the model matrix.  We also need to apply it to our in-memory
+        // vertex data for the sake of collision detection
+        // TODO WARNING!! This is not the right way to do this, as if we ever
+        // copy the vertex data to the gpu this transformation will stick!!
+        mat4 modelMatrix = Translate(m_x, m_y, m_z ) * 
+                           RotateY( 1 ) *
+                           Translate( -m_x, -m_y, -m_z );
+        for ( int i = 0; i < m_vertices.size(); i++ ) {
+            vec4 oldVertex = m_vertices[ i ];
+            m_vertices[ i ] = modelMatrix * oldVertex;
+        }
 
     }
 
@@ -485,10 +508,12 @@ namespace dgfx {
         GLuint mainShader = shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
         GLuint wireframeShader = shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
 
+        mat4 modelMatrix = Translate( m_x, m_y, m_z ) * RotateY(m_yRot);
+
         glUseProgram( mainShader );
         glBindVertexArray( m_vertexArrays[0] );
         GLuint mainModelMatrix = glGetUniformLocation( mainShader, "model_matrix" );
-        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, Translate( m_x, m_y, m_z ) * RotateY(m_yRot));
+        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, modelMatrix);
 
         glDrawArrays( GL_TRIANGLES, 0, m_vertices.size() );
 
@@ -497,12 +522,10 @@ namespace dgfx {
 
     void RecursiveSphere::blackenTriangle( uint16_t triangleIdx ) {
         // Modify the color vertex attributes for the triangle at the index
-        if ( triangleIdx >= m_vertices.size() )
-            return;
         vec4 black( 0, 0, 0, 1 );
         vec4 blacks[] = {black, black, black};
         glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
-        glBufferSubData( GL_ARRAY_BUFFER, 3 * triangleIdx * sizeof(vec4), 3*sizeof( vec4 ), &blacks );
+        glBufferSubData( GL_ARRAY_BUFFER, triangleIdx * sizeof(vec4), 3*sizeof( vec4 ), &blacks );
 
     }
 
