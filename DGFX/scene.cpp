@@ -338,20 +338,23 @@ namespace dgfx {
      
      void A4Scene::keyboardHandler(unsigned char key, int x, int y) {
          Scene::keyboardHandler( key, x, y );
-
          const float ROTATION_SPEED = 0.1;
+
+         if ( key == ' ' ) {
+             if ( m_activeCamera->m_id == 0 )
+                 m_activeCamera = m_cameras[1];
+             else
+                 m_activeCamera = m_cameras[0];
+         }
+
+         if (m_activeCamera->m_id != 0 )
+             return;
+
          switch ( key ) {
              case 'r':
                  globalAnimationToggle();
                  break;
 
-             case ' ':
-                 if ( m_activeCamera->m_id == 0 )
-                     m_activeCamera = m_cameras[1];
-                 else
-                     m_activeCamera = m_cameras[0];
-
-             break;
              case 'p':
                 m_activeCamera->toggleProjectionMode();
              break;
@@ -383,7 +386,11 @@ namespace dgfx {
      }
 
      void A4Scene::specialKeyHandler(int key, int x, int y) {
+         Scene::specialKeyHandler( key, x, y );
          const float MOVE_SPEED = 0.25;
+
+         if (m_activeCamera->m_id != 0 )
+             return;
 
          switch (key) {
             case GLUT_KEY_UP:
