@@ -320,8 +320,7 @@ namespace dgfx {
 
         if ( m_yRot >= 360)
             m_yRot = 0;
-        float deg = daveutils::randomFloat( 1, 180);
-        m_yRot += deg * sin(deg * .001) * 360 ;
+        m_yRot += 1;
 
     }
 
@@ -492,6 +491,18 @@ namespace dgfx {
         glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, Translate( m_x, m_y, m_z ) * RotateY(m_yRot));
 
         glDrawArrays( GL_TRIANGLES, 0, m_vertices.size() );
+
+    }
+
+
+    void RecursiveSphere::blackenTriangle( uint16_t triangleIdx ) {
+        // Modify the color vertex attributes for the triangle at the index
+        if ( triangleIdx >= m_vertices.size() )
+            return;
+        vec4 black( 0, 0, 0, 1 );
+        vec4 blacks[] = {black, black, black};
+        glBindBuffer( GL_ARRAY_BUFFER, m_vertexBuffers[1] );
+        glBufferSubData( GL_ARRAY_BUFFER, 3 * triangleIdx * sizeof(vec4), 3*sizeof( vec4 ), &blacks );
 
     }
 

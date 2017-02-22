@@ -115,11 +115,13 @@ namespace dgfx {
     };
 
     class RecursiveSphere : public Model {
+    friend class A4Scene;
     public:
         RecursiveSphere( float x,
                          float y,
                          float z,
                          uint16_t numRecursions );
+        void blackenTriangle( uint16_t triangleIdx );
 
     private:
         uint16_t m_recursionDepth;

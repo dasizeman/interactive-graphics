@@ -5,13 +5,15 @@ namespace dgfx {
 class Camera {
 
 private:
-    vec4 m_eye, m_u, m_v, m_n;
+    vec4 m_u, m_v, m_n;
     bool m_usePerspectiveProjection = false;
     void updateViewMatrix();
 
 public:
     Camera(uint16_t id, vec4 eye, vec4 at, vec4 up);
+    vec4 m_eye;
     uint16_t m_id;
+    float m_near, m_far, m_aspect, m_fov;
 
     mat4 m_viewMatrix;
     mat4 m_projectionMatrix;
@@ -26,6 +28,8 @@ public:
     void pitch( float amount );
     void roll( float amount );
     void yaw( float amount );
+
+    mat4 viewInverse();
 };
 
 }

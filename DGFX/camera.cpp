@@ -25,6 +25,10 @@ namespace dgfx {
     }
     void Camera::usePerspectiveProjection( float fovy, float aspect, float znear, float zfar ) {
         m_projectionMatrix = Perspective( fovy, aspect, znear, zfar );
+        m_fov = fovy;
+        m_aspect = aspect;
+        m_near = znear;
+        m_far = zfar;
 
     }
     void Camera::useOrthographicProjection( float left, float right, float bottom, float top, float near, float far ) {
@@ -65,5 +69,14 @@ namespace dgfx {
         m_u = cos(amount)*old_u - sin(amount)*m_n;
         m_n = sin(amount)*old_u + cos(amount)*m_n;
         updateViewMatrix();
+    }
+
+
+    mat4 Camera::viewInverse() {
+        return mat4 (
+            vec4( m_u.x, m_v.x, m_n.x, m_eye.x ),
+            vec4( m_u.y, m_v.y, m_n.y, m_eye.y ),
+            vec4( m_u.z, m_v.z, m_n.z, m_eye.z ),
+            vec4( 0, 0, 0, 1 ) );
     }
 }

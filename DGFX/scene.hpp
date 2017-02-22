@@ -26,6 +26,7 @@ namespace dgfx {
         bool m_doAnimation = false;
 
         uint16_t m_screenWidth, m_screenHeight;
+        uint16_t m_miscIdx; // For testing
 
         const static std::string DEFAULT_WINDOW_NAME;
         const static std::string SHADER_PATH;
@@ -43,6 +44,7 @@ namespace dgfx {
 	virtual void timerCallback( int value );
 
         void glewInitAndVersion(void);
+
 
 
     public:
@@ -90,6 +92,10 @@ namespace dgfx {
          void specialKeyHandler(int key, int x, int y);
 	 void displayCallback();
 	 void clickHandler(GLint button, GLint state, GLint x, GLint y);
+         void pickTriangle( uint16_t x, uint16_t y );
+         float rayIntersectsPlane( vec3 ray, vec3 e, vec3 f, vec3 g );
+         bool insideTest( vec3 e, vec3 f, vec3 g, vec3 point );
+         vec3 FourDto3d( vec4 vector );
     };
 
 

@@ -179,6 +179,9 @@ namespace dgfx {
         void Scene::close_handler() {
     }
 
+
+     
+
     // ---- A2Scene ------
 
      void A2Scene::keyboardHandler(unsigned char key, int x, int y) {
@@ -403,6 +406,21 @@ namespace dgfx {
      }
 
      void A4Scene::clickHandler(GLint button, GLint state, GLint x, GLint y) {
+        /*
+        // TODO testing
+        for (std::unique_ptr<Entity> &entity : m_entities ) {
+            RecursiveSphere *sphere = dynamic_cast<RecursiveSphere*>( entity.get() );
+            if ( sphere != nullptr )
+                sphere->blackenTriangle( m_miscIdx );
+        }
+        m_miscIdx++;
+        */
+         if (! (m_activeCamera->m_id == 0 &&
+                button == GLUT_LEFT_BUTTON &&
+                state == GLUT_DOWN ))
+             return;
+
+         pickTriangle( x, y );
 
      }
 
@@ -425,5 +443,91 @@ namespace dgfx {
         Scene::displayCallback();
 
      }
+
+     // Pick a triangle based on click coordinates and turn it black
+     void A4Scene::pickTriangle( uint16_t x, uint16_t y ) {
+
+         // First we calculate where the clicked point is on the front of the
+         // canonical view volume
+         vec4 canonicalPt ( 2 * (x / m_screenWidth) - 1,
+                            1 - 2 * (y / m_screenHeight),
+                            -1,
+                            1 );
+
+         // Now we undo the perspective projection
+         float t = m_activeCamera->m_near * tan( m_activeCamera->m_fov / 2 );
+         float r = t * m_activeCamera->m_aspect;
+
+         vec4 noPerspective ( r * canonicalPt.x,
+                              t * canonicalPt.y,
+                              -m_activeCamera->m_near,
+                              1 );
+
+         // Now we need to get from camera coordinates to world coordinates by
+         // creating and multiplying by the inverse of camera coord system
+         mat4 viewInverse = m_activeCamera->viewInverse();
+
+         vec4 worldPt = viewInverse * noPerspective;
+
+         // Now we can get the click ray in world coordinates
+         vec3 worldRay = FourDto3d( worldPt - m_activeCamera->m_eye );
+
+         // We now go through every triangle in the scene to see if our ray
+         // intersects it
+         for ( std::unique_ptr<Entity> &entity : m_entities ) {
+             // We are only interested in RecursiveSpheres here
+            RecursiveSphere *sphere = dynamic_cast<RecursiveSphere*>( entity.get() );
+            if ( sphere == nullptr )
+                continue;
+
+
+             for ( uint16_t triangleIdx = 0; triangleIdx < sphere->m_vertices.size() - 2; triangleIdx += 3 ) {
+                 vec3 E = FourDto3d( sphere->m_vertices[ triangleIdx ] );
+                 vec3 F = FourDto3d( sphere->m_vertices[ triangleIdx + 1 ] );
+                 vec3 G = FourDto3d( sphere->m_vertices[ triangleIdx + 2 ] );
+
+                 // TODO only doing plane test for now
+                 float t = rayIntersectsPlane( worldRay, E, F, G );
+                 if ( t > 0) {
+                    vec3 intersectPt = FourDto3d( m_activeCamera->m_eye ) + t * worldRay;
+                    if ( insideTest( E, F, G, intersectPt ) )
+                        sphere->blackenTriangle( triangleIdx );
+                 }
+
+             }
+
+         }
+
+     }
+
+
+     float A4Scene::rayIntersectsPlane( vec3 ray, vec3 e, vec3 f, vec3 g ) {
+         vec3 N = cross( (f - e), (g - e) );
+         vec3 O = FourDto3d( m_activeCamera->m_eye );
+         vec3 D = ray;
+         float d = dot( -e, N );
+
+         return - ( dot(N, O) + d ) / dot(N,D);
+
+     }
+
+
+     bool A4Scene::insideTest( vec3 e, vec3 f, vec3 g, vec3 point ) {
+         vec3 N = cross( (f - e), (g - e) );
+         float dot1 = dot( cross( f - e, point - e ), N );
+         float dot2 = dot( cross( g - f, point - f ), N );
+         float dot3 = dot( cross( e - g, point - g ), N );
+
+         std::cout << dot1 << "," << dot2 << "," << dot3 << std::endl;
+
+         return dot1 >= 0 && dot2 >= 0 && dot3 >= 0;
+
+     }
+
+
+     vec3 A4Scene::FourDto3d( vec4 vector ) {
+         return vec3 ( vector.x, vector.y, vector.z );
+     }
+
 
 }
