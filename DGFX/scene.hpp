@@ -98,6 +98,17 @@ namespace dgfx {
          vec3 FourDto3d( vec4 vector );
     };
 
+    class A5Scene : public Scene {
+    public:
+        A5Scene();
+
+    protected:
+	 void keyboardHandler(unsigned char key, int x, int y);
+         void specialKeyHandler(int key, int x, int y);
+	 void displayCallback();
+	 void timerCallback( int value );
+    };
+
 
 
 }

@@ -538,5 +538,24 @@ namespace dgfx {
          return vec3 ( vector.x, vector.y, vector.z );
      }
 
+     // ----- A5 Scene -----
+     
+     A5Scene::A5Scene() : Scene() {}
 
+     void A5Scene::keyboardHandler(unsigned char key, int x, int y) {
+
+     }
+     
+     void A5Scene::specialKeyHandler(int key, int x, int y) {
+
+     }
+
+     void A5Scene::displayCallback(){
+
+
+     }
+
+     void A5Scene::timerCallback( int value ) {
+
+     }
 }
