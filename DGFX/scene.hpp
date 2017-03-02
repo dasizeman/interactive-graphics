@@ -9,6 +9,7 @@
 #include "Angel.h"
 #include "entity.hpp"
 #include "camera.hpp"
+#include "light.hpp"
 
 #define FPS 100
 
@@ -23,6 +24,7 @@ namespace dgfx {
         std::shared_ptr<Camera> m_activeCamera;
         std::map<std::string, GLuint> m_shaderMap;
         std::vector<std::unique_ptr<Entity>> m_entities;
+        std::vector<Light> m_lights;
         bool m_doAnimation = false;
 
         uint16_t m_screenWidth, m_screenHeight;
@@ -99,6 +101,8 @@ namespace dgfx {
     };
 
     class A5Scene : public Scene {
+    const static std::string FRAGMENT_LIGHTING_SHADER_NAME,
+          VERTEX_LIGHTING_SHADER_NAME;
     public:
         A5Scene();
 

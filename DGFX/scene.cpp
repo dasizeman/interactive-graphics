@@ -47,6 +47,7 @@ namespace dgfx {
         glutTimerFunc( 1000, timer_callback_wrapper, 0);
 
         // Load the global 3D shaders
+        // TODO handle this differently; they aren't always needed
         addShader( FLAT_3D_SHADER_NAME );
         addShader( WIREFRAME_SHADER_NAME );
 
@@ -539,8 +540,23 @@ namespace dgfx {
      }
 
      // ----- A5 Scene -----
+     const std::string A5Scene::VERTEX_LIGHTING_SHADER_NAME = "phong_sun_spot_vert";
+     const std::string A5Scene::FRAGMENT_LIGHTING_SHADER_NAME = "phong_sun_spot_frag";
      
-     A5Scene::A5Scene() : Scene() {}
+     A5Scene::A5Scene() : Scene() {
+        addShader( VERTEX_LIGHTING_SHADER_NAME );
+        addShader( FRAGMENT_LIGHTING_SHADER_NAME );
+
+        // Create cameras
+        m_cameras.push_back( std::shared_ptr<Camera> ( new Camera (
+                    0,
+                    vec4( 0, 2, 0, 0 ),
+                    vec4( 0, 0, -1, 0 ),
+                    vec4( 0, 1, 0, 0 ) ) ) );
+
+        m_activeCamera = m_cameras[0];
+     
+     }
 
      void A5Scene::keyboardHandler(unsigned char key, int x, int y) {
 

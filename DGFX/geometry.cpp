@@ -211,7 +211,6 @@ namespace dgfx {
                 m_elements[ i + m_n ] = 2 * m_n - i - 1;
             }
 
-           std::cout << daveutils::printVector( m_elements ) << std::endl;
 
            // Now we connect the front and back faces by specifying the corners
            // of a quad connecting each side of the front and back
@@ -230,9 +229,6 @@ namespace dgfx {
                 m_elements.push_back( frontIdx + m_n + 1 );
                 m_elements.push_back( frontIdx + 1 );
            } 
-
-
-           std::cout << daveutils::printVector( m_elements ) << std::endl;
     }
 
 
@@ -258,6 +254,9 @@ namespace dgfx {
         m_n = n;
         m_size = size;
         m_depth = depth;
+
+        // TODO Bad design note, this Model class should really be a Polyhedron,
+        // and there should be another common base class
         generate();
     }
 
@@ -266,6 +265,10 @@ namespace dgfx {
     }
     void Model::rotate    (float x, float y, float z) {
 
+    }
+
+    void Model::calculateNormals() {
+        //TODO populate m_normals
     }
 
 
@@ -429,6 +432,10 @@ namespace dgfx {
                          Model( x, y, z ){
         m_recursionDepth = numRecursions;
         generate();
+    }
+
+    void RecursiveSphere::init(std::map<std::string, GLuint>& shaderMap) {
+        Model::init( shaderMap );
     }
 
 

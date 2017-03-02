@@ -92,11 +92,13 @@ namespace dgfx {
         uint16_t m_n;
 
         protected:
-        std::vector<vec4> m_vertices, m_colors;
+        std::vector<vec4> m_vertices, m_colors, m_normals;
         std::vector<GLuint> m_elements;
         float m_x, m_y, m_z, m_xRot, m_yRot, m_zRot;
         vec4 m_frameColor;
         virtual void generate();
+
+        void calculateNormals();
 
 
         // Called by the scene to set up GL data structures
@@ -144,7 +146,8 @@ namespace dgfx {
 
 
         // Called by the scene to draw the object
-        void draw(std::map<std::string, GLuint>& shaderMap);
+        virtual void init(std::map<std::string, GLuint>& shaderMap);
+        virtual void draw(std::map<std::string, GLuint>& shaderMap);
 
 
     };
@@ -161,6 +164,28 @@ namespace dgfx {
 
         // Called by the scene to draw the object
         void draw(std::map<std::string, GLuint>& shaderMap);
+
+    };
+
+    class LightedRecursiveSphere : public RecursiveSphere {
+    private:
+        vec4 m_ambient, m_diffuse, m_specular, m_shinyness;
+
+    protected:
+        // Called by the scene to draw the object
+        virtual void init(std::map<std::string, GLuint>& shaderMap);
+        virtual void draw(std::map<std::string, GLuint>& shaderMap);
+
+    };
+
+    class LightedPolyhedron : public Model {
+    private:
+        vec4 m_ambient, m_diffuse, m_specular, m_shinyness;
+
+    protected:
+        // Called by the scene to draw the object
+        virtual void init(std::map<std::string, GLuint>& shaderMap);
+        virtual void draw(std::map<std::string, GLuint>& shaderMap);
 
     };
     
