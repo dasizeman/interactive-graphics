@@ -1,3 +1,4 @@
+#version 150
 // per-fragment interpolated values from the vertex shader
 varying  vec3 fN;
 varying  vec3 fL;

@@ -544,7 +544,7 @@ namespace dgfx {
      const std::string A5Scene::FRAGMENT_LIGHTING_SHADER_NAME = "phong_sun_spot_frag";
      
      A5Scene::A5Scene() : Scene() {
-        addShader( VERTEX_LIGHTING_SHADER_NAME );
+        //addShader( VERTEX_LIGHTING_SHADER_NAME );
         addShader( FRAGMENT_LIGHTING_SHADER_NAME );
 
         // Create cameras
@@ -555,23 +555,115 @@ namespace dgfx {
                     vec4( 0, 1, 0, 0 ) ) ) );
 
         m_activeCamera = m_cameras[0];
-     
+
+        // Create the lights
+        m_lights.push_back( Light(DIRECTIONAL, 
+                    vec4(-1.0,0.0,0.0,0.0), 
+                    vec4( 0.2, 0.2, 0.2, 1.0 ),
+                    vec4( 1.0, 1.0, 1.0, 1.0 ),
+                    vec4( 1.0, 1.0, 1.0, 1.0 )));
      }
 
      void A5Scene::keyboardHandler(unsigned char key, int x, int y) {
+         Scene::keyboardHandler( key, x, y );
+         const float ROTATION_SPEED = 0.1;
+
+         if ( key == ' ' ) {
+         }
+
+         switch ( key ) {
+             case 'r':
+                 globalAnimationToggle();
+                 break;
+
+             case 'p':
+                m_activeCamera->toggleProjectionMode();
+             break;
+
+             case 'X':
+                m_activeCamera->pitch( ROTATION_SPEED );
+             break;
+             case 'x':
+                m_activeCamera->pitch( -ROTATION_SPEED );
+            break;
+
+             case 'Z':
+                m_activeCamera->roll( ROTATION_SPEED );
+             break;
+             case 'z':
+                m_activeCamera->roll( -ROTATION_SPEED );
+             break;
+
+             case 'C':
+                m_activeCamera->yaw( ROTATION_SPEED );
+             break;
+
+             case 'c':
+                m_activeCamera->yaw( -ROTATION_SPEED );
+             break;
+
+         }
 
      }
      
      void A5Scene::specialKeyHandler(int key, int x, int y) {
+         Scene::specialKeyHandler( key, x, y );
+         const float MOVE_SPEED = 0.25;
+
+         if (m_activeCamera->m_id != 0 )
+             return;
+
+         switch (key) {
+            case GLUT_KEY_UP:
+                m_activeCamera->moveAlongAt( MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_DOWN:
+                m_activeCamera->moveAlongAt( -MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_LEFT:
+                m_activeCamera->moveAlongU( -MOVE_SPEED );
+            break;
+
+            case GLUT_KEY_RIGHT:
+                m_activeCamera->moveAlongU( MOVE_SPEED );
+            break;
+         }
 
      }
 
      void A5Scene::displayCallback(){
+        GLuint mainShader = m_shaderMap[ A5Scene::FRAGMENT_LIGHTING_SHADER_NAME ];
+
+        // Set the view and projection uniforms
+        glUseProgram( mainShader );
+        GLuint mainProjMatrix = glGetUniformLocation( mainShader, "proj_matrix" );
+        glUniformMatrix4fv(mainProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
+        GLuint mainViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
+        glUniformMatrix4fv(mainViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
+
+        // Set the lighting uniforms
+        GLuint shaderLoc = glGetUniformLocation( mainShader, "LightPosition" );
+        glUniform4fv( shaderLoc, 1, m_lights[0].m_position );
+        shaderLoc = glGetUniformLocation( mainShader, "AmbientLight" );
+        glUniform4fv( shaderLoc, 1, m_lights[0].m_ambient );
+        shaderLoc = glGetUniformLocation( mainShader, "DiffuseLight" );
+        glUniform4fv( shaderLoc, 1, m_lights[0].m_diffuse );
+        shaderLoc = glGetUniformLocation( mainShader, "SpecularLight" );
+        glUniform4fv( shaderLoc, 1, m_lights[0].m_specular );
+
+        Scene::displayCallback();
 
 
      }
 
      void A5Scene::timerCallback( int value ) {
+         m_lights[0].m_position.w = 1.0;
+         m_lights[0].m_position = RotateZ(1) * m_lights[0].m_position;
+         m_lights[0].m_position.w = 0;
+        
+         Scene::timerCallback( value );
 
      }
 }

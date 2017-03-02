@@ -7,9 +7,6 @@ namespace dgfx {
     } LightType;
 
     class Light {
-        private:
-            LightType m_type;
-            vec4 m_ambient, m_diffuse, m_specular;
         public:
             Light( LightType type,
                     vec4 position,
@@ -17,6 +14,8 @@ namespace dgfx {
                     vec4 diffuse,
                     vec4 specular );
             vec4 m_position;
+            LightType m_type;
+            vec4 m_ambient, m_diffuse, m_specular;
     };
 }
 

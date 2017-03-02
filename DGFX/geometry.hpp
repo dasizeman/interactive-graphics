@@ -92,7 +92,8 @@ namespace dgfx {
         uint16_t m_n;
 
         protected:
-        std::vector<vec4> m_vertices, m_colors, m_normals;
+        std::vector<vec4> m_vertices, m_colors;
+        std::vector<vec3> m_normals;
         std::vector<GLuint> m_elements;
         float m_x, m_y, m_z, m_xRot, m_yRot, m_zRot;
         vec4 m_frameColor;
@@ -168,8 +169,14 @@ namespace dgfx {
     };
 
     class LightedRecursiveSphere : public RecursiveSphere {
+    public:
+    LightedRecursiveSphere( float x,
+                     float y,
+                     float z,
+                     uint16_t numRecursions );
     private:
-        vec4 m_ambient, m_diffuse, m_specular, m_shinyness;
+        vec4 m_ambient, m_diffuse, m_specular;
+        float m_shininess;
 
     protected:
         // Called by the scene to draw the object
@@ -179,8 +186,17 @@ namespace dgfx {
     };
 
     class LightedPolyhedron : public Model {
+    public:
+
+    LightedPolyhedron( float x,
+             float y, 
+             float z,
+             uint16_t n,
+             float size, 
+             float depth);
     private:
-        vec4 m_ambient, m_diffuse, m_specular, m_shinyness;
+        vec4 m_ambient, m_diffuse, m_specular;
+        float m_shininess;
 
     protected:
         // Called by the scene to draw the object

@@ -101,10 +101,10 @@ namespace dgfx {
     };
 
     class A5Scene : public Scene {
-    const static std::string FRAGMENT_LIGHTING_SHADER_NAME,
-          VERTEX_LIGHTING_SHADER_NAME;
     public:
         A5Scene();
+    const static std::string FRAGMENT_LIGHTING_SHADER_NAME,
+          VERTEX_LIGHTING_SHADER_NAME;
 
     protected:
 	 void keyboardHandler(unsigned char key, int x, int y);

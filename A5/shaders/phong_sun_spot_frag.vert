@@ -1,14 +1,16 @@
-attribute   vec4 vPosition;
-attribute   vec3 vNormal;
+#version 150
+in   vec4 vPosition;
+in   vec3 vNormal;
 
 // output values that will be interpretated per-fragment
-varying  vec3 fN;
-varying  vec3 fE;
-varying  vec3 fL;
+out  vec3 fN;
+out  vec3 fE;
+out  vec3 fL;
 
-uniform mat4 ModelView;
+uniform mat4 model_matrix;
+uniform mat4 view_matrix;
+uniform mat4 proj_matrix;
 uniform vec4 LightPosition;
-uniform mat4 Projection;
 
 void main()
 {
@@ -20,5 +22,5 @@ void main()
 	fL = LightPosition.xyz - vPosition.xyz;
     }
 
-    gl_Position = Projection*ModelView*vPosition;
+  gl_Position = proj_matrix * view_matrix * model_matrix * vPosition;
 }

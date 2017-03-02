@@ -269,6 +269,19 @@ namespace dgfx {
 
     void Model::calculateNormals() {
         //TODO populate m_normals
+        for (int i = 0; i < m_vertices.size(); i += 3 ) {
+            int vidx = 0;
+            vec3 E( m_vertices[i + vidx].x, m_vertices[i + vidx].y, m_vertices[i + vidx].z );
+            vidx++;
+            vec3 F( m_vertices[i + vidx].x, m_vertices[i + vidx].y, m_vertices[i + vidx].z );
+            vidx++;
+            vec3 G( m_vertices[i + vidx].x, m_vertices[i + vidx].y, m_vertices[i + vidx].z );
+
+            vec3 normal = normalize( cross( F - E, G - E )); 
+            m_normals.push_back( normal );
+            m_normals.push_back( normal );
+            m_normals.push_back( normal );
+        }
     }
 
 
@@ -574,5 +587,146 @@ namespace dgfx {
         glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
 
     }
+
+    // TODO yes we really need some sort of "lighted" base class...
+    // ----- LightedPolyhedron -----
+    LightedPolyhedron::LightedPolyhedron( float x,
+             float y, 
+             float z,
+             uint16_t n,
+             float size, 
+             float depth) : Model(x,y,z,n,size,depth) {
+
+        // Calculate the normals
+        Model::calculateNormals();
+
+        // TODO we are just going to use some arbitrary material values for now
+        m_ambient = vec4( 1.0, 0.0, 1.0, 1.0 );
+        m_diffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
+        m_specular = vec4( 1.0, 0.0, 1.0, 1.0 );
+        m_shininess = 5.0;
+    }
+
+    // Called by the scene to draw the object
+    void LightedPolyhedron::init(std::map<std::string, GLuint>& shaderMap) {
+        GLuint mainShader = shaderMap[ A5Scene::FRAGMENT_LIGHTING_SHADER_NAME ];
+
+        glGenBuffers(3, &m_vertexBuffers[0]);
+        glGenVertexArrays( 1, &m_vertexArrays[0]);
+
+        glBindVertexArray( m_vertexArrays[0] );
+
+        // Copy vertex position data and set up the attribute pointers
+        
+        glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffers[0] );
+        glBufferData( GL_ARRAY_BUFFER, m_vertices.size() * sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
+        GLuint vPositionLoc = glGetAttribLocation( mainShader, "vPosition" );
+        glEnableVertexAttribArray( vPositionLoc );
+        glVertexAttribPointer( vPositionLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+        // Copy over the element data
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_vertexBuffers[2] );
+        glBufferData( GL_ELEMENT_ARRAY_BUFFER, m_elements.size() * sizeof(GLuint), &m_elements[0], GL_STATIC_DRAW );
+
+
+        // Generate the model matrix.  We also need to apply it to our in-memory
+        // vertex data for the sake of collision detection
+        // TODO WARNING!! This is not the right way to do this, as if we ever
+        // copy the vertex data to the gpu this transformation will stick!!
+        mat4 modelMatrix = Translate(m_x, m_y, m_z );
+        for ( int i = 0; i < m_vertices.size(); i++ ) {
+            vec4 oldVertex = m_vertices[ i ];
+            m_vertices[ i ] = modelMatrix * oldVertex;
+        }
+
+    }
+
+    void LightedPolyhedron::draw(std::map<std::string, GLuint>& shaderMap) {
+
+    }
+
+
+    // ----- LightedRecursiveSphere ------
+    LightedRecursiveSphere::LightedRecursiveSphere( float x,
+                     float y,
+                     float z,
+                     uint16_t numRecursions ) : RecursiveSphere( x,y,z,numRecursions){
+        // Calculate the normals
+        // TODO: TERRIBLE DESIGN this is implemented to work for polyhedrons but
+        // it doesn't.  This is a result of the crappy base model class design,
+        // if anything, the default should work for polyhedrons and we should
+        // override it for the sphere but I'm in a rush
+        Model::calculateNormals();
+        std::cout << "vertices: " << m_vertices.size() << " normals: " << m_normals.size() << std::endl;
+
+        // TODO we are just going to use some arbitrary material values for now
+        m_ambient = vec4( 1.0, 0.0, 1.0, 1.0 );
+        m_diffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
+        m_specular = vec4( 1.0, 0.0, 1.0, 1.0 );
+        m_shininess = 5.0;
+
+    }
+
+     void LightedRecursiveSphere::init(std::map<std::string, GLuint>& shaderMap) {
+        GLuint mainShader = shaderMap[ A5Scene::FRAGMENT_LIGHTING_SHADER_NAME ];
+
+        glGenBuffers(2, &m_vertexBuffers[0]);
+        glGenVertexArrays( 1, &m_vertexArrays[0]);
+
+        glBindVertexArray( m_vertexArrays[0] );
+
+        // Copy vertex position data and set up the attribute pointers
+        
+        glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffers[0] );
+        glBufferData( GL_ARRAY_BUFFER, m_vertices.size() * sizeof(vec4), &m_vertices[0], GL_STATIC_DRAW );
+        GLuint vPositionLoc = glGetAttribLocation( mainShader, "vPosition" );
+        glEnableVertexAttribArray( vPositionLoc );
+        glVertexAttribPointer( vPositionLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+        // Copy the normals
+        glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffers[1] );
+        glBufferData( GL_ARRAY_BUFFER, m_normals.size() * sizeof(vec3), &m_normals[0], GL_STATIC_DRAW );
+        GLuint vNormalLoc = glGetAttribLocation( mainShader, "vNormal" );
+        glEnableVertexAttribArray( vNormalLoc );
+        glVertexAttribPointer( vNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+
+
+        // Generate the model matrix.  We also need to apply it to our in-memory
+        // vertex data for the sake of collision detection
+        // TODO WARNING!! This is not the right way to do this, as if we ever
+        // copy the vertex data to the gpu this transformation will stick!!
+        mat4 modelMatrix = Translate(m_x, m_y, m_z );
+        for ( int i = 0; i < m_vertices.size(); i++ ) {
+            vec4 oldVertex = m_vertices[ i ];
+            m_vertices[ i ] = modelMatrix * oldVertex;
+        }
+
+     }
+     void LightedRecursiveSphere::draw(std::map<std::string, GLuint>& shaderMap) {
+        GLuint mainShader = shaderMap[ A5Scene::FRAGMENT_LIGHTING_SHADER_NAME ];
+
+        mat4 modelMatrix = Translate( m_x, m_y, m_z ) * RotateY(m_yRot);
+
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
+
+        // Set model matrix uniform
+        GLuint mainModelMatrix = glGetUniformLocation( mainShader, "model_matrix" );
+        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, modelMatrix);
+
+        // Set material property uniforms
+        GLuint shaderLoc = glGetUniformLocation( mainShader, "AmbientMaterial" );
+        glUniform4fv( shaderLoc, 1, m_ambient );
+        shaderLoc = glGetUniformLocation( mainShader, "SpecularMaterial" );
+        glUniform4fv( shaderLoc, 1, m_specular );
+        shaderLoc = glGetUniformLocation( mainShader, "DiffuseMaterial" );
+        glUniform4fv( shaderLoc, 1, m_diffuse );
+        shaderLoc = glGetUniformLocation( mainShader, "Shininess" );
+        glUniform1f( shaderLoc, m_shininess );
+
+        glDrawArrays( GL_TRIANGLES, 0, m_vertices.size() );
+
+     }
 
 }

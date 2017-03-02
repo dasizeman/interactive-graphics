@@ -1,9 +1,13 @@
+#version 150
 // per-fragment interpolated values from the vertex shader
-varying  vec3 fN;
-varying  vec3 fL;
-varying  vec3 fE;
+in  vec3 fN;
+in  vec3 fL;
+in  vec3 fE;
 
-uniform vec4 AmbientProduct, DiffuseProduct, SpecularProduct;
+out vec4 FragColor;
+
+uniform vec4 AmbientLight, DiffuseLight, SpecularLight;
+uniform vec4 AmbientMaterial, DiffuseMaterial, SpecularMaterial;
 uniform mat4 ModelView;
 uniform vec4 LightPosition;
 uniform float Shininess;
@@ -17,20 +21,20 @@ void main()
 
     vec3 H = normalize( L + E );
     
-    vec4 ambient = AmbientProduct;
+    vec4 ambient = AmbientLight * AmbientMaterial;
 
     float Kd = max(dot(L, N), 0.0);
-    vec4 diffuse = Kd*DiffuseProduct;
+    vec4 diffuse = Kd*DiffuseLight * DiffuseMaterial;
     
     float Ks = pow(max(dot(N, H), 0.0), Shininess);
-    vec4 specular = Ks*SpecularProduct;
+    vec4 specular = Ks*SpecularLight * SpecularMaterial;
 
     // discard the specular highlight if the light's behind the vertex
     if( dot(L, N) < 0.0 ) {
 	specular = vec4(0.0, 0.0, 0.0, 1.0);
     }
 
-    gl_FragColor = ambient + diffuse + specular;
-    gl_FragColor.a = 1.0;
+    FragColor = ambient + diffuse + specular;
+    FragColor.a = 1.0;
 } 
 
