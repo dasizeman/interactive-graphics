@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
     scene->addEntity(std::unique_ptr<Entity>(new LightedRecursiveSphere(0, 1, -4, 5)));
     scene->addEntity(std::unique_ptr<Entity>(new LightedPlane()));
-    //scene->addEntity(std::unique_ptr<Entity>(new LightedPolyhedron(1.5, 0.5, -4, 4, 1.0, sqrt(2.0) )));
+    scene->addEntity(std::unique_ptr<Entity>(new LightedCube(0, 1, 4)));
 
 
     scene->start();

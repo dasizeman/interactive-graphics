@@ -211,6 +211,15 @@ namespace dgfx {
         void generate();
         void draw(std::map<std::string, GLuint>& shaderMap);
     };
+
+    class LightedCube : public LightedRecursiveSphere {
+    public:
+        LightedCube(float x, float y, float z);
+    protected:
+        void generate();
+        void makeQuad(GLubyte a, GLubyte b, GLubyte c, GLubyte d, vec4 *vertices);
+
+    };
     
 }
 

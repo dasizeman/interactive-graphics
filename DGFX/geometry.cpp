@@ -874,4 +874,43 @@ namespace dgfx {
 
     }
 
+    LightedCube::LightedCube(float x, float y, float z) : LightedRecursiveSphere(x,y,z,0) {
+        m_vertices.clear();
+        m_normals.clear();
+
+        m_ambient = vec4( 1.0, 1.0, 0.0, 1.0 );
+        m_diffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
+        m_specular = vec4( 1.0, 1.0, 0.0, 1.0 );
+        m_shininess = 5.0;
+
+        generate();
+
+        Model::calculateNormals();
+    }
+
+    void LightedCube::generate() {
+  	vec4 vertices[] = {vec4(-0.5,-0.5,0.5,1.0),vec4(-0.5,0.5,0.5,1.0),vec4(0.5,0.5,0.5,1.0),vec4(0.5,-0.5,0.5,1.0), vec4(-0.5,-0.5,-0.5,1.0),vec4(-0.5,0.5,-0.5,1.0),vec4(0.5,0.5,-0.5,1.0),vec4(0.5,-0.5,-0.5,1.0)};
+
+         makeQuad(1,0,3,2, vertices);  //front
+         makeQuad(2,3,7,6, vertices);  //right
+         makeQuad(3,0,4,7, vertices);  //bottom
+         makeQuad(6,5,1,2, vertices);  //top
+         makeQuad(4,5,6,7, vertices);  //back
+         makeQuad(5,4,0,1, vertices);  //left
+
+    }
+
+    void LightedCube::makeQuad(GLubyte a, GLubyte b, GLubyte c, GLubyte d, vec4 *vertices){
+      //Triangle #1
+      m_vertices.push_back(vertices[a]);
+      m_vertices.push_back(vertices[b]);
+      m_vertices.push_back(vertices[c]);
+
+      //Triangle #2
+      m_vertices.push_back(vertices[a]);
+      m_vertices.push_back(vertices[c]);
+      m_vertices.push_back(vertices[d]);
+
+    }
+
 }
