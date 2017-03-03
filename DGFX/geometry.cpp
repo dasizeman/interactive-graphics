@@ -211,7 +211,15 @@ namespace dgfx {
                 m_elements[ i + m_n ] = 2 * m_n - i - 1;
             }
 
+            vec3 E = daveutils::FourDto3d(m_vertices[ m_elements[0] ]);
+            vec3 F = daveutils::FourDto3d(m_vertices[ m_elements[1] ]);
+            vec3 G = daveutils::FourDto3d(m_vertices[ m_elements[m_n - 1] ]);
+            vec3 normal = normalize( cross( F - E, G - E )); 
+            for ( int i = 0; i < m_n; i++)
+                m_normals.push_back(normal);
 
+            for ( int i = 0; i < m_n; i++)
+                m_normals.push_back(-normal);
            // Now we connect the front and back faces by specifying the corners
            // of a quad connecting each side of the front and back
            for (int frontIdx = 0; frontIdx < m_n; frontIdx++ ) {
@@ -222,12 +230,30 @@ namespace dgfx {
                    m_elements.push_back( frontIdx + m_n );
                    m_elements.push_back( frontIdx + 1 );
                    m_elements.push_back( 0 );
+
+                   E = daveutils::FourDto3d( m_vertices[ frontIdx ] );
+                   F = daveutils::FourDto3d( m_vertices[ frontIdx  + m_n ] );
+                   G = daveutils::FourDto3d( m_vertices[ 0 ] );
+
+                   normal = normalize( cross( F - E, G - E )); 
+                   for (int i = 0; i < 4; i++)
+                       m_normals.push_back( normal );
                    continue;
                }
                 m_elements.push_back( frontIdx );
                 m_elements.push_back( frontIdx + m_n );
                 m_elements.push_back( frontIdx + m_n + 1 );
                 m_elements.push_back( frontIdx + 1 );
+
+
+                E = daveutils::FourDto3d( m_vertices[ frontIdx ] );
+                F = daveutils::FourDto3d( m_vertices[ frontIdx + m_n ] );
+                G = daveutils::FourDto3d( m_vertices[ frontIdx + 1 ] );
+                normal = normalize( cross( F - E, G - E )); 
+
+                for(int i = 0; i < 4; i++)
+                    m_normals.push_back( normal);
+
            } 
     }
 
@@ -571,6 +597,15 @@ namespace dgfx {
 
         m_vertices.push_back( vec4( m_sideLength / 2, 0, m_sideLength / 2, 1 ) );
         m_colors.push_back( m_color );
+
+        vec3 E = daveutils::FourDto3d(m_vertices[0]);
+        vec3 F = daveutils::FourDto3d(m_vertices[1]);
+        vec3 G = daveutils::FourDto3d(m_vertices[2]);
+        vec3 normal = -normalize( cross( F - E, G - E )); 
+        m_normals.push_back( normal );
+        m_normals.push_back( normal );
+        m_normals.push_back( normal );
+        m_normals.push_back( normal );
     }
 
 
@@ -597,14 +632,13 @@ namespace dgfx {
              float size, 
              float depth) : Model(x,y,z,n,size,depth) {
 
-        // Calculate the normals
-        Model::calculateNormals();
 
         // TODO we are just going to use some arbitrary material values for now
         m_ambient = vec4( 1.0, 0.0, 1.0, 1.0 );
         m_diffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
         m_specular = vec4( 1.0, 0.0, 1.0, 1.0 );
         m_shininess = 5.0;
+        std::cout << "vertices: " << m_vertices.size() << " normals: " << m_normals.size() << std::endl;
     }
 
     // Called by the scene to draw the object
@@ -624,9 +658,17 @@ namespace dgfx {
         glEnableVertexAttribArray( vPositionLoc );
         glVertexAttribPointer( vPositionLoc, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
+        // Copy the normals
+        glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffers[1] );
+        glBufferData( GL_ARRAY_BUFFER, m_normals.size() * sizeof(vec3), &m_normals[0], GL_STATIC_DRAW );
+        GLuint vNormalLoc = glGetAttribLocation( mainShader, "vNormal" );
+        glEnableVertexAttribArray( vNormalLoc );
+        glVertexAttribPointer( vNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
         // Copy over the element data
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_vertexBuffers[2] );
         glBufferData( GL_ELEMENT_ARRAY_BUFFER, m_elements.size() * sizeof(GLuint), &m_elements[0], GL_STATIC_DRAW );
+
 
 
         // Generate the model matrix.  We also need to apply it to our in-memory
@@ -642,6 +684,52 @@ namespace dgfx {
     }
 
     void LightedPolyhedron::draw(std::map<std::string, GLuint>& shaderMap) {
+        GLuint mainShader = shaderMap[ A5Scene::FRAGMENT_LIGHTING_SHADER_NAME ];
+
+        mat4 modelMatrix = Translate( m_x, m_y, m_z ) * RotateY(m_yRot);
+
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
+
+        // Set model matrix uniform
+        GLuint mainModelMatrix = glGetUniformLocation( mainShader, "model_matrix" );
+        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, modelMatrix);
+
+        // Set material property uniforms
+        GLuint shaderLoc = glGetUniformLocation( mainShader, "AmbientMaterial" );
+        glUniform4fv( shaderLoc, 1, m_ambient );
+        shaderLoc = glGetUniformLocation( mainShader, "SpecularMaterial" );
+        glUniform4fv( shaderLoc, 1, m_specular );
+        shaderLoc = glGetUniformLocation( mainShader, "DiffuseMaterial" );
+        glUniform4fv( shaderLoc, 1, m_diffuse );
+        shaderLoc = glGetUniformLocation( mainShader, "Shininess" );
+        glUniform1f( shaderLoc, m_shininess );
+
+        uint64_t elementOffset = 0;
+
+        // Draw the front and back faces
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
+        glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+
+
+        elementOffset += m_n;
+
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
+        glDrawElements( GL_TRIANGLE_FAN, m_n, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+
+
+        elementOffset += m_n;
+
+        // Draw each connecting quad
+        for (int i = 0; i < m_n; i++ ) {
+            glUseProgram( mainShader );
+            glBindVertexArray( m_vertexArrays[0] );
+            glDrawElements( GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, BUFFER_OFFSET(elementOffset * sizeof(GLuint)) );
+
+            elementOffset += 4;
+        }
 
     }
 
@@ -728,5 +816,62 @@ namespace dgfx {
         glDrawArrays( GL_TRIANGLES, 0, m_vertices.size() );
 
      }
+
+     // ----- Lighted Plane -----
+     
+    LightedPlane::LightedPlane() : LightedRecursiveSphere( 0,0,0,0) {
+       m_vertices.clear();
+       m_normals.clear();
+       generate();
+    }
+
+    void LightedPlane::generate() {
+        float m_sideLength = 1000;
+        m_vertices.push_back( vec4( -m_sideLength / 2, 0,  m_sideLength / 2, 1 ) ); 
+
+        m_vertices.push_back( vec4( -m_sideLength / 2, 0, -m_sideLength / 2, 1 ) );
+
+        m_vertices.push_back( vec4( m_sideLength / 2, 0, -m_sideLength / 2, 1 ) );
+
+        m_vertices.push_back( vec4( m_sideLength / 2, 0, m_sideLength / 2, 1 ) );
+
+        vec3 E = daveutils::FourDto3d(m_vertices[0]);
+        vec3 F = daveutils::FourDto3d(m_vertices[1]);
+        vec3 G = daveutils::FourDto3d(m_vertices[2]);
+        vec3 normal = -normalize( cross( F - E, G - E )); 
+        m_normals.push_back( normal );
+        m_normals.push_back( normal );
+        m_normals.push_back( normal );
+        m_normals.push_back( normal );
+
+
+    }
+
+
+    void LightedPlane::draw(std::map<std::string, GLuint>& shaderMap) {
+        GLuint mainShader = shaderMap[ A5Scene::FRAGMENT_LIGHTING_SHADER_NAME ];
+
+        mat4 modelMatrix = Translate( m_x, m_y, m_z ) * RotateY(m_yRot);
+
+        glUseProgram( mainShader );
+        glBindVertexArray( m_vertexArrays[0] );
+
+        // Set model matrix uniform
+        GLuint mainModelMatrix = glGetUniformLocation( mainShader, "model_matrix" );
+        glUniformMatrix4fv(mainModelMatrix,1, GL_TRUE, modelMatrix);
+
+        // Set material property uniforms
+        GLuint shaderLoc = glGetUniformLocation( mainShader, "AmbientMaterial" );
+        glUniform4fv( shaderLoc, 1, m_ambient );
+        shaderLoc = glGetUniformLocation( mainShader, "SpecularMaterial" );
+        glUniform4fv( shaderLoc, 1, m_specular );
+        shaderLoc = glGetUniformLocation( mainShader, "DiffuseMaterial" );
+        glUniform4fv( shaderLoc, 1, m_diffuse );
+        shaderLoc = glGetUniformLocation( mainShader, "Shininess" );
+        glUniform1f( shaderLoc, m_shininess );
+
+        glDrawArrays( GL_TRIANGLE_FAN, 0, m_vertices.size() );
+
+    }
 
 }

@@ -89,9 +89,9 @@ namespace dgfx {
 
         private:
         float m_size, m_depth;
-        uint16_t m_n;
 
         protected:
+        uint16_t m_n;
         std::vector<vec4> m_vertices, m_colors;
         std::vector<vec3> m_normals;
         std::vector<GLuint> m_elements;
@@ -143,7 +143,7 @@ namespace dgfx {
                               int count );
 
     protected:
-        void generate();
+        virtual void generate();
 
 
         // Called by the scene to draw the object
@@ -174,11 +174,10 @@ namespace dgfx {
                      float y,
                      float z,
                      uint16_t numRecursions );
-    private:
-        vec4 m_ambient, m_diffuse, m_specular;
-        float m_shininess;
 
     protected:
+        vec4 m_ambient, m_diffuse, m_specular;
+        float m_shininess;
         // Called by the scene to draw the object
         virtual void init(std::map<std::string, GLuint>& shaderMap);
         virtual void draw(std::map<std::string, GLuint>& shaderMap);
@@ -203,6 +202,14 @@ namespace dgfx {
         virtual void init(std::map<std::string, GLuint>& shaderMap);
         virtual void draw(std::map<std::string, GLuint>& shaderMap);
 
+    };
+
+    class LightedPlane : public LightedRecursiveSphere {
+    public:
+        LightedPlane();
+    protected:
+        void generate();
+        void draw(std::map<std::string, GLuint>& shaderMap);
     };
     
 }

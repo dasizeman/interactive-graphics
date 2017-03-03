@@ -20,6 +20,8 @@ namespace daveutils {
 
     std::vector<vec4> generateNGon(uint16_t numSides, float size,  float depth);
 
+    vec3 FourDto3d( vec4 vector );
+
     template <typename T>
     std::string printVector ( std::vector<T> &vec) {
         std::stringstream ss;

@@ -78,6 +78,9 @@ namespace daveutils {
         return result;
 
     }
+     vec3 FourDto3d( vec4 vector ) {
+         return vec3 ( vector.x, vector.y, vector.z );
+     }
 
 
 
