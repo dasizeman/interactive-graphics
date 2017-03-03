@@ -4,7 +4,7 @@ in  vec3 fN;
 in  vec3 directionalL;
 in  vec3 flashL, flashLd; 
 in  vec3 fE;
-in  vec3 p, p0;
+in  vec4 p, p0;
 
 out vec4 FragColor;
 
@@ -21,8 +21,6 @@ void main()
     vec3 E = normalize(fE);
 
 
-
-    /*
     // ----- Directional Light -----
     vec3 L = normalize(directionalL);
 
@@ -40,30 +38,34 @@ void main()
     if( dot(L, N) < 0.0 ) {
 	specular = vec4(0.0, 0.0, 0.0, 1.0);
     }
-    */
 
     // ----- Flashlight -----
-    vec3 L = normalize(flashL);
+    L = normalize(flashL);
     vec3 Ld = normalize(flashLd);
 
     float distanceFalloff = 1 / pow(length(p - p0), 2);
+    float spotlightFactor = pow(max(dot(-L, Ld),0), 2);
+    float theta = abs(acos(dot(-L,Ld)));
+    if (theta > radians(15))
+        spotlightFactor = 0;
+    spotlightFactor *= distanceFalloff;
 
-    vec3 H = normalize( L + E );
+    H = normalize( L + E );
     
-    vec4 ambient = DirectionalLightAmbient * AmbientMaterial * distanceFalloff;
+    ambient += DirectionalLightAmbient * AmbientMaterial * spotlightFactor;
 
-    float Kd = max(dot(L, N), 0.0);
-    vec4 diffuse = Kd*DirectionalLightDiffuse * DiffuseMaterial * distanceFalloff;
+    Kd = max(dot(L, N), 0.0);
+    diffuse += Kd*DirectionalLightDiffuse * DiffuseMaterial * spotlightFactor;
     
-    float Ks = pow(max(dot(N, H), 0.0), Shininess);
-    vec4 specularAdd = Ks*DirectionalLightSpecular * SpecularMaterial * distanceFalloff;
+    Ks = pow(max(dot(N, H), 0.0), Shininess);
+    vec4 specularAdd = Ks*DirectionalLightSpecular * SpecularMaterial * spotlightFactor;
 
     // discard the specular highlight if the light's behind the vertex
     if( dot(L, N) < 0.0 ) {
 	specularAdd = vec4(0.0, 0.0, 0.0, 1.0);
     }
 
-    vec4 specular = specularAdd;
+    specular += specularAdd;
 
 
     FragColor = ambient + diffuse + specular;

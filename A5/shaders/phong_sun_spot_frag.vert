@@ -7,14 +7,14 @@ out  vec3 fN;
 out  vec3 fE;
 out  vec3 directionalL;
 out  vec3 flashL, flashLd;
-out  vec3 p, p0;
+out  vec4 p, p0;
 
 
 uniform mat4 model_matrix;
 uniform mat4 view_matrix;
 uniform mat4 proj_matrix;
 uniform vec4 DirectionalLightPosition;
-uniform vec4 FlashlightPosition, FlashlightDirection;
+uniform vec4 FlashlightPosition;
 
 void main()
 {
@@ -23,11 +23,11 @@ void main()
     fE = -positionInCamera;
     directionalL = (view_matrix*DirectionalLightPosition).xyz;
     
-    flashL = (view_matrix*FlashlightPosition).xyz - positionInCamera;
-    flashLd = (view_matrix*FlashlightDirection).xyz;
+    flashL = (view_matrix*FlashlightPosition).xyz-positionInCamera;
+    flashLd = vec3(0,0,-1);
 
-    p = FlashlightPosition.xyz;
-    p0 = vPosition.xyz;
+    p = FlashlightPosition;
+    p0 = vPosition;
 
    gl_Position = proj_matrix * view_matrix * model_matrix * vPosition;
 }

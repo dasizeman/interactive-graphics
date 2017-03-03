@@ -550,7 +550,7 @@ namespace dgfx {
         // Create cameras
         m_cameras.push_back( std::shared_ptr<Camera> ( new Camera (
                     0,
-                    vec4( 0, 2, 0, 0 ),
+                    vec4( 0, 2, 0, 1 ),
                     vec4( 0, 0, -1, 0 ),
                     vec4( 0, 1, 0, 0 ) ) ) );
 
@@ -676,10 +676,10 @@ namespace dgfx {
      }
 
      void A5Scene::timerCallback( int value ) {
-         Scene::timerCallback( value );
 
          m_lights[0].m_position = RotateZ(0.25) * m_lights[0].m_position;
          m_lights[1].m_position = m_activeCamera->m_eye;
+         Scene::timerCallback( value );
 
      }
 }

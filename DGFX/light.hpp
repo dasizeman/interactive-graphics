@@ -14,6 +14,7 @@ namespace dgfx {
                     vec4 diffuse,
                     vec4 specular );
             vec4 m_position;
+            vec4 m_direction;
             LightType m_type;
             vec4 m_ambient, m_diffuse, m_specular;
     };

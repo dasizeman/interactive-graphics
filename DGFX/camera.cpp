@@ -10,7 +10,8 @@ namespace dgfx {
                     m_n( -at ),
                     m_v( up ){
         toggleProjectionMode();
-        m_u = normalize( cross(m_v,m_n) );
+        m_u = cross(m_v,m_n);
+        m_u.w = 0;
         updateViewMatrix();
     }
 
@@ -37,7 +38,7 @@ namespace dgfx {
 
 
     void Camera::updateViewMatrix() {
-        m_viewMatrix = LookAt( m_eye, m_eye - m_n, m_v );
+        m_viewMatrix = LookAt( m_eye, m_eye- m_n, m_v );
     }
 
 
@@ -55,12 +56,16 @@ namespace dgfx {
         vec4 old_v = m_v;
         m_v = cos(amount)*old_v - sin(amount)*m_n;
         m_n = sin(amount)*old_v + cos(amount)*m_n;
+        m_u = cross(m_v,m_n) ;
+        m_u.w = 0;
         updateViewMatrix();
     }
     void Camera::roll( float amount ) {
         vec4 old_v = m_v;
         m_v = cos(amount)*old_v - sin(amount)*m_u;
         m_u = sin(amount)*old_v + cos(amount)*m_u;
+        m_n = cross(m_u, m_v);
+        m_n.w = 0;
         updateViewMatrix();
 
     }
@@ -68,6 +73,8 @@ namespace dgfx {
         vec4 old_u = m_u;
         m_u = cos(amount)*old_u - sin(amount)*m_n;
         m_n = sin(amount)*old_u + cos(amount)*m_n;
+        m_v = cross(m_n, m_u);
+        m_v.w = 0;
         updateViewMatrix();
     }
 
