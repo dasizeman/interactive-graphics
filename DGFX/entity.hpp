@@ -30,8 +30,9 @@ protected:
     virtual void clickHandler(GLint button, GLint state, GLint x, GLint y)=0;
     virtual void specialKeyHandler(int key, int x, int y)= 0;
 
-    // Called by the scene to determine which shaders to load
-    const std::vector<std::string> &getShaderNames();
+    // Called by the scene so the entity can get a reference to the shader it
+    // wants to use
+    virtual void setShader( std::map<std::string, GLuint>& shaderMap ) = 0;
 	
 
 };

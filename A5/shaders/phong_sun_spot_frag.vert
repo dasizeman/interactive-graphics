@@ -26,8 +26,8 @@ void main()
     flashL = (view_matrix*FlashlightPosition).xyz-positionInCamera;
     flashLd = vec3(0,0,-1);
 
-    p = FlashlightPosition;
-    p0 = vPosition;
+    p = view_matrix * FlashlightPosition;
+    p0 = view_matrix * model_matrix * vPosition;
 
    gl_Position = proj_matrix * view_matrix * model_matrix * vPosition;
 }

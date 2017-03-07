@@ -12,5 +12,6 @@ namespace dgfx {
         m_position( position ),
         m_ambient( ambient ),
         m_diffuse( diffuse ),
-        m_specular( specular ){}
+        m_specular( specular ),
+        m_toggle( 1 ){}
 }

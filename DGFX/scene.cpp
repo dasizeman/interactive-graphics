@@ -59,10 +59,7 @@ namespace dgfx {
 
 
     void Scene::addEntity(std::unique_ptr<Entity> entity) {
-        // Load all of the entity's shaders
-        for ( std::string shaderName : entity->getShaderNames() )
-            addShader( shaderName );
-
+        entity->setShader( m_shaderMap );
         entity->init( m_shaderMap );
 
         m_entities.push_back( std::move(entity) );
@@ -183,141 +180,8 @@ namespace dgfx {
 
      
 
-    // ---- A2Scene ------
 
-     void A2Scene::keyboardHandler(unsigned char key, int x, int y) {
-         switch ( key ) {
-            case ' ':
-            m_doAnimation = !m_doAnimation;
-            globalAnimationToggle();
-            break;
-         }
-
-         Scene::keyboardHandler( key, x, y );
-
-     }
-
-     void A2Scene::clickHandler(GLint button, GLint state, GLint x, GLint y) {
-        vec4 blue_opaque = vec4( 0.0, 0.0, 1.0, 1.0 );
-        vec4 red_opaque = vec4( 1.0, 0.0, 0.0, 1.0 );
-
-        // TODO make object factories, as well as an eventhandler interface that
-        // is set on the scene to swap event handling logic
-        if ( button == GLUT_LEFT_BUTTON && state == GLUT_DOWN ) {
-            auto squarePts = daveutils::generateSquareVertices( x, y, 100);
-            daveutils::convertToCameraCoordinates( squarePts, m_screenWidth, m_screenHeight );
-            float cameraX = static_cast<float>(x);
-            float cameraY = static_cast<float>(y);
-            daveutils::convertClickCoordinates( cameraX, cameraY, m_screenWidth, m_screenHeight );
-            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( squarePts, red_opaque, cameraX, cameraY ) ));
-            glutPostRedisplay();
-        }
-
-        if( button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN ) {
-            auto trianglePts = daveutils::generateTriangleVertices( x , y, 100);
-            daveutils::convertToCameraCoordinates( trianglePts, m_screenWidth, m_screenHeight );
-            float cameraX = static_cast<float>(x);
-            float cameraY = static_cast<float>(y);
-            daveutils::convertClickCoordinates( cameraX, cameraY, m_screenWidth, m_screenHeight );
-            addEntity( std::unique_ptr<Entity>(new SingleColorPolygon( trianglePts, blue_opaque, cameraX, cameraY) ));
-            glutPostRedisplay();
-            
-        }
-
-        Scene::clickHandler( button, state, x, y );
-
-     }
-
-     // ----- A3 Scene -----
-     
-     A3Scene::A3Scene() : Scene() {
-        m_cameras.push_back( std::shared_ptr<Camera>( new Camera ( 0,
-                    vec4( 0,0,0,0 ),
-                    vec4( 0,0,-1,0),
-                    vec4( 0,1,0,0) )));
-        m_activeCamera = m_cameras[0];
-     }
-     
-     void A3Scene::keyboardHandler(unsigned char key, int x, int y) {
-         Scene::keyboardHandler( key, x, y );
-
-         const float ROTATION_SPEED = 0.1;
-         switch ( key ) {
-             case ' ':
-                 globalAnimationToggle();
-
-             break;
-             case 'p':
-                m_activeCamera->toggleProjectionMode();
-             break;
-
-             case 'X':
-                m_activeCamera->pitch( ROTATION_SPEED );
-             break;
-             case 'x':
-                m_activeCamera->pitch( -ROTATION_SPEED );
-            break;
-
-             case 'Z':
-                m_activeCamera->roll( ROTATION_SPEED );
-             break;
-             case 'z':
-                m_activeCamera->roll( -ROTATION_SPEED );
-             break;
-
-             case 'C':
-                m_activeCamera->yaw( ROTATION_SPEED );
-             break;
-
-             case 'c':
-                m_activeCamera->yaw( -ROTATION_SPEED );
-             break;
-
-         }
-
-     }
-     void A3Scene::specialKeyHandler(int key, int x, int y) {
-         const float MOVE_SPEED = 0.25;
-         switch (key) {
-            case GLUT_KEY_UP:
-                m_activeCamera->moveAlongAt( MOVE_SPEED );
-            break;
-
-            case GLUT_KEY_DOWN:
-                m_activeCamera->moveAlongAt( -MOVE_SPEED );
-            break;
-
-            case GLUT_KEY_LEFT:
-                m_activeCamera->moveAlongU( -MOVE_SPEED );
-            break;
-
-            case GLUT_KEY_RIGHT:
-                m_activeCamera->moveAlongU( MOVE_SPEED );
-            break;
-         }
-
-     }
-
-     void A3Scene::displayCallback() {
-        GLuint mainShader = m_shaderMap[ Scene::FLAT_3D_SHADER_NAME ];
-        GLuint wireframeShader = m_shaderMap[ Scene::WIREFRAME_SHADER_NAME ];
-
-        glUseProgram( mainShader );
-        GLuint mainProjMatrix = glGetUniformLocation( mainShader, "proj_matrix" );
-        glUniformMatrix4fv(mainProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
-        GLuint mainViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
-        glUniformMatrix4fv(mainViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
-
-        glUseProgram( wireframeShader );
-        GLuint wireframeProjMatrix = glGetUniformLocation( wireframeShader, "proj_matrix" );
-        glUniformMatrix4fv(wireframeProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
-        GLuint wireframeViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
-        glUniformMatrix4fv(wireframeViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
-
-         Scene::displayCallback();
-
-     }
-
+    /*
      // ----- A4Scene -----
      
      A4Scene::A4Scene() : Scene() {
@@ -414,15 +278,13 @@ namespace dgfx {
      }
 
      void A4Scene::clickHandler(GLint button, GLint state, GLint x, GLint y) {
-        /*
         // TODO testing
-        for (std::unique_ptr<Entity> &entity : m_entities ) {
-            RecursiveSphere *sphere = dynamic_cast<RecursiveSphere*>( entity.get() );
-            if ( sphere != nullptr )
-                sphere->blackenTriangle( m_miscIdx );
-        }
-        m_miscIdx++;
-        */
+        //for (std::unique_ptr<Entity> &entity : m_entities ) {
+        //    RecursiveSphere *sphere = dynamic_cast<RecursiveSphere*>( entity.get() );
+        //    if ( sphere != nullptr )
+        //        sphere->blackenTriangle( m_miscIdx );
+        //}
+        //m_miscIdx++;
          if (! (m_activeCamera->m_id == 0 &&
                 button == GLUT_LEFT_BUTTON &&
                 state == GLUT_DOWN ))
@@ -539,6 +401,8 @@ namespace dgfx {
          return vec3 ( vector.x, vector.y, vector.z );
      }
 
+     */
+
      // ----- A5 Scene -----
      const std::string A5Scene::VERTEX_LIGHTING_SHADER_NAME = "phong_sun_spot_vert";
      const std::string A5Scene::FRAGMENT_LIGHTING_SHADER_NAME = "phong_sun_spot_frag";
@@ -576,9 +440,13 @@ namespace dgfx {
          const float ROTATION_SPEED = 0.1;
 
          if ( key == ' ' ) {
+             m_lights[1].m_toggle = !m_lights[1].m_toggle;
          }
 
          switch ( key ) {
+             case 'a':
+                m_lights[0].m_toggle = !m_lights[0].m_toggle;
+                break;
              case 'r':
                  globalAnimationToggle();
                  break;
@@ -659,6 +527,8 @@ namespace dgfx {
         glUniform4fv( shaderLoc, 1, m_lights[0].m_diffuse );
         shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightSpecular" );
         glUniform4fv( shaderLoc, 1, m_lights[0].m_specular );
+        shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightToggle" );
+        glUniform1i( shaderLoc, m_lights[0].m_toggle);
 
         // Set the lighting uniforms for the flash light
         shaderLoc = glGetUniformLocation( mainShader, "FlashlightPosition" );
@@ -669,6 +539,8 @@ namespace dgfx {
         glUniform4fv( shaderLoc, 1, m_lights[1].m_diffuse );
         shaderLoc = glGetUniformLocation( mainShader, "FlashlightSpecular" );
         glUniform4fv( shaderLoc, 1, m_lights[1].m_specular );
+        shaderLoc = glGetUniformLocation( mainShader, "FlashlightToggle" );
+        glUniform1i( shaderLoc, m_lights[1].m_toggle );
 
         Scene::displayCallback();
 

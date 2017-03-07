@@ -1,5 +1,6 @@
 #ifndef __DGFX_LIGHT_H__
 #define __DGFX_LIGHT_H__
+#include "Angel.h"
 namespace dgfx {
     typedef enum {
         DIRECTIONAL,
@@ -17,6 +18,7 @@ namespace dgfx {
             vec4 m_direction;
             LightType m_type;
             vec4 m_ambient, m_diffuse, m_specular;
+            int m_toggle;
     };
 }
 

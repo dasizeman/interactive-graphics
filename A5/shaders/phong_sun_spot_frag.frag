@@ -11,6 +11,7 @@ out vec4 FragColor;
 uniform vec4 DirectionalLightAmbient, DirectionalLightDiffuse, DirectionalLightSpecular;
 uniform vec4 FlashlightAmbient, FlashlightDiffuse, FlashlightSpecular;
 uniform vec4 AmbientMaterial, DiffuseMaterial, SpecularMaterial;
+uniform int DirectionalLightToggle, FlashlightToggle;
 
 uniform float Shininess;
 
@@ -26,13 +27,13 @@ void main()
 
     vec3 H = normalize( L + E );
     
-    vec4 ambient = DirectionalLightAmbient * AmbientMaterial;
+    vec4 ambient = DirectionalLightAmbient * AmbientMaterial * DirectionalLightToggle;
 
     float Kd = max(dot(L, N), 0.0);
-    vec4 diffuse = Kd*DirectionalLightDiffuse * DiffuseMaterial;
+    vec4 diffuse = Kd*DirectionalLightDiffuse * DiffuseMaterial * DirectionalLightToggle;
     
     float Ks = pow(max(dot(N, H), 0.0), Shininess);
-    vec4 specular = Ks*DirectionalLightSpecular * SpecularMaterial;
+    vec4 specular = Ks*DirectionalLightSpecular * SpecularMaterial * DirectionalLightToggle;
 
     // ----- Flashlight -----
     L = normalize(flashL);
@@ -47,13 +48,13 @@ void main()
 
     H = normalize( L + E );
     
-    ambient += DirectionalLightAmbient * AmbientMaterial * spotlightFactor;
+    ambient += FlashlightAmbient * AmbientMaterial * spotlightFactor * FlashlightToggle;
 
     Kd = max(dot(L, N), 0.0);
-    diffuse += Kd*DirectionalLightDiffuse * DiffuseMaterial * spotlightFactor;
+    diffuse += Kd*FlashlightDiffuse * DiffuseMaterial * spotlightFactor * FlashlightToggle;
     
     Ks = pow(max(dot(N, H), 0.0), Shininess);
-    vec4 specularAdd = Ks*DirectionalLightSpecular * SpecularMaterial * spotlightFactor;
+    vec4 specularAdd = Ks*FlashlightSpecular * SpecularMaterial * spotlightFactor * FlashlightToggle;
 
     specular += specularAdd;
 

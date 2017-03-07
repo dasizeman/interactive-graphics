@@ -66,25 +66,8 @@ namespace dgfx {
         static void close_handler();
     };
 
-    class A2Scene : public Scene {
-	 void keyboardHandler(unsigned char key, int x, int y);
-	 void clickHandler(GLint button, GLint state, GLint x, GLint y);
-    };
 
-    class A3Scene : public Scene {
-
-    public:
-        A3Scene();
-
-
-    protected:
-	 void keyboardHandler(unsigned char key, int x, int y);
-         void specialKeyHandler(int key, int x, int y);
-
-	 void displayCallback();
-
-    };
-
+    /*
     class A4Scene : public Scene {
     public:
         A4Scene();
@@ -99,6 +82,7 @@ namespace dgfx {
          bool insideTest( vec3 e, vec3 f, vec3 g, vec3 point );
          vec3 FourDto3d( vec4 vector );
     };
+    */
 
     class A5Scene : public Scene {
     public:
