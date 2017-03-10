@@ -168,8 +168,8 @@ namespace dgfx {
         virtual void generateGeometry();
         virtual void textureInit();
         virtual void textureDraw();
-        virtual void update(std::map<std::string, GLuint>& shaderMap);
         virtual void setShader( std::map<std::string, GLuint>& shaderMap );
+        virtual void keyboardHandler(unsigned char key, int x, int y);
 
     };
     

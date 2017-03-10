@@ -747,8 +747,8 @@ namespace dgfx {
         glEnableVertexAttribArray( vTexCoordLoc );
         glVertexAttribPointer( vTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
-        m_textureHandles.resize(1);
-        glGenTextures( 1, &m_textureHandles[0] );
+        m_textureHandles.resize(2);
+        glGenTextures( 2, &m_textureHandles[0] );
         int width = 512, height = 512;
 
         GLubyte *image = (ppmRead("textures/crate_texture.ppm", &width, &height));
@@ -759,18 +759,48 @@ namespace dgfx {
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
+        
+        width = 332, height = 337;
 
+        GLubyte *image2 = (ppmRead("textures/rollsafe.ppm", &width, &height));
+        glBindTexture( GL_TEXTURE_2D, m_textureHandles[1] );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image2 );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
 
     }
 
     void TexturedLightedCube::textureDraw() {
 
+        /*
+        // We don't want mat properties for textures
+        GLuint shaderLoc = glGetUniformLocation( m_activeShader, "AmbientMaterial" );
+        glUniform4fv( shaderLoc, 1, vec4(1,1,1,1) );
+        shaderLoc = glGetUniformLocation( m_activeShader, "SpecularMaterial" );
+        glUniform4fv( shaderLoc, 1, vec4(1,1,1,1) );
+        shaderLoc = glGetUniformLocation( m_activeShader, "DiffuseMaterial" );
+        glUniform4fv( shaderLoc, 1, vec4(1,1,1,1) );
+        shaderLoc = glGetUniformLocation( m_activeShader, "Shininess" );
+        glUniform1f( shaderLoc, 1.0 );
+        */
+
+        if ( m_activeTextureHandle == 0 ) {
+            glEnable( GL_TEXTURE_2D );
+            glActiveTexture( GL_TEXTURE0 );
+            glBindTexture( GL_TEXTURE_2D, m_textureHandles[0] );
+    
+            glUniform1i( glGetAttribLocation( m_activeShader, "textureID" ), 0 );
+            return;
+        }
+
         glEnable( GL_TEXTURE_2D );
         glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_2D, m_textureHandles[0] );
-    
-        glUniform1i( glGetAttribLocation( m_activeShader, "textureID" ), 0 );
+        glBindTexture( GL_TEXTURE_2D, m_textureHandles[1] );
+
+        glUniform1i( glGetAttribLocation( m_activeShader, "textureID" ), 1 );
 
     }
 
@@ -779,7 +809,10 @@ namespace dgfx {
         m_activeShader = shaderMap[ A5Scene::FRAGMENT_TEXTURE_SHADER_NAME ];
     }
 
+    void TexturedLightedCube::keyboardHandler(unsigned char key, int x, int y) {
+        if (key == 't' )
+            m_activeTextureHandle = !m_activeTextureHandle;
 
-    void TexturedLightedCube::update(std::map<std::string, GLuint>& shaderMap){}
+    }
 }
 
