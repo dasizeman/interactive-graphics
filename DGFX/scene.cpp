@@ -416,7 +416,7 @@ namespace dgfx {
         // Create cameras
         m_cameras.push_back( std::shared_ptr<Camera> ( new Camera (
                     0,
-                    vec4( 0, 2, 0, 1 ),
+                    vec4( 0, 1, 0, 1 ),
                     vec4( 0, 0, -1, 0 ),
                     vec4( 0, 1, 0, 0 ) ) ) );
 

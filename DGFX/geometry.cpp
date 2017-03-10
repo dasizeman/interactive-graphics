@@ -514,7 +514,7 @@ namespace dgfx {
     }
     void LightedGeometry::draw(std::map<std::string, GLuint>& shaderMap) {
         
-        mat4 modelMatrix = Translate( m_x, m_y, m_z ) * RotateY(m_yRot);
+        mat4 modelMatrix = Translate( m_x, m_y, m_z ) * RotateX( m_xRot ) * RotateY(m_yRot) * RotateZ( m_zRot);
 
         glUseProgram( m_activeShader );
         glBindVertexArray( m_vertexArrays[0] );
@@ -702,7 +702,7 @@ namespace dgfx {
     }
 
     void LightedPlane::generateGeometry() {
-        float m_sideLength = 1000;
+        float m_sideLength = 50;
         /*
         m_vertices.push_back( vec4( -m_sideLength / 2, 0,  m_sideLength / 2, 1 ) ); // TL
 
@@ -813,6 +813,73 @@ namespace dgfx {
         if (key == 't' )
             m_activeTextureHandle = !m_activeTextureHandle;
 
+    }
+
+    // -----------------------
+    TexturedLightedPlane::TexturedLightedPlane( float x, float y, float z, float yrot, float zrot) :
+        LightedPlane() {
+            m_x = x;
+            m_y = y;
+            m_z = z;
+            m_yRot = yrot;
+            m_zRot = zrot;
+        }
+
+
+    void TexturedLightedPlane::generateGeometry() {
+        LightedPlane::generateGeometry();
+
+        // Do a basic plane mapping for each side
+        for (int i = 0; i < 6; i++ ) {
+            m_textureCoords.push_back( vec2(0,0) );
+            m_textureCoords.push_back( vec2(1,0) );
+            m_textureCoords.push_back( vec2(1,1) );
+
+            m_textureCoords.push_back( vec2(0,0) );
+            m_textureCoords.push_back( vec2(1,1) );
+            m_textureCoords.push_back( vec2(0,1) );
+        }
+
+
+    }
+
+    void TexturedLightedPlane::textureInit() {
+        glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffers[2] );
+        glBufferData( GL_ARRAY_BUFFER, m_textureCoords.size() * sizeof(vec2), &m_textureCoords[0], GL_STATIC_DRAW );
+        GLuint vTexCoordLoc = glGetAttribLocation( m_activeShader, "vTexCoord" );
+        glEnableVertexAttribArray( vTexCoordLoc );
+        glVertexAttribPointer( vTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+        m_textureHandles.resize(2);
+        glGenTextures( 2, &m_textureHandles[0] );
+        int width = 512, height = 512;
+
+        GLubyte *image = (ppmRead("textures/grass.ppm", &width, &height));
+        glBindTexture( GL_TEXTURE_2D, m_textureHandles[0] );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+
+    }
+
+    void TexturedLightedPlane::textureDraw() {
+
+        glEnable( GL_TEXTURE_2D );
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, m_textureHandles[0] );
+
+        glUniform1i( glGetAttribLocation( m_activeShader, "textureID" ), 0 );
+
+    }
+
+
+    void TexturedLightedPlane::setShader( std::map<std::string, GLuint>& shaderMap ) {
+        m_activeShader = shaderMap[ A5Scene::FRAGMENT_TEXTURE_SHADER_NAME ];
+    }
+
+    void TexturedLightedPlane::keyboardHandler(unsigned char key, int x, int y) {
     }
 }
 

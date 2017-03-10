@@ -80,7 +80,7 @@ namespace dgfx {
         std::vector<vec2> m_textureCoords;
         std::vector<GLuint> m_textureHandles;
         float m_shininess;
-        float m_yRot;
+        float m_xRot ,m_yRot, m_zRot;
 
         GLuint m_activeShader;
 
@@ -171,6 +171,19 @@ namespace dgfx {
         virtual void setShader( std::map<std::string, GLuint>& shaderMap );
         virtual void keyboardHandler(unsigned char key, int x, int y);
 
+    };
+
+    class TexturedLightedPlane : public LightedPlane {
+    public:
+        TexturedLightedPlane ( float x, float y, float z, float yrot, float zrot );
+
+    protected:
+        // Set current active texture in GL
+        virtual void generateGeometry();
+        virtual void textureInit();
+        virtual void textureDraw();
+        virtual void setShader( std::map<std::string, GLuint>& shaderMap );
+        virtual void keyboardHandler(unsigned char key, int x, int y);
     };
     
 }
