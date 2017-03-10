@@ -397,16 +397,89 @@ namespace dgfx {
             m_shininess = 5.0;
     }
 
+    // Copies any texture coords to GPU and sets up the attrib pointer
+    void LightedGeometry::textureInit(){}
+    void LightedGeometry::textureDraw(){}
+
+
+   
+    unsigned char * LightedGeometry::ppmRead(char* filename, int* width, int* height) {
+	FILE* fp=NULL;
+	int i, w, h, d;
+	unsigned char* image;
+	char head[70];		// max line <= 70 in PPM (per spec).
+#ifdef WIN32
+	fopen_s(&fp, filename, "rb");
+#else
+	fp = fopen(filename, "rb");
+#endif
+	if (fp==NULL) {
+	    perror(filename);
+	    return NULL;
+	}
+	
+	// Grab first two chars of the file and make sure that it has the
+	// correct magic cookie for a raw PPM file.
+	fgets(head, 70, fp);
+	if (strncmp(head, "P6", 2)) {
+	    fprintf(stderr, "%s: Not a raw PPM file\n", filename);
+	    return NULL;
+	}
+	
+	// Grab the three elements in the header (width, height, maxval).
+	i = 0;
+	while (i < 3) {
+	    fgets(head, 70, fp);
+	    if (head[0] == '#')		// skip comments.
+		continue;
+	    if (i == 0){
+#ifdef WIN32
+		i += sscanf_s(head, "%d %d %d", &w, &h, &d);
+#else
+		i += sscanf(head, "%d %d %d", &w, &h, &d);
+#endif
+	    }
+	    else if (i == 1){
+#ifdef WIN32
+		i += sscanf_s(head, "%d %d", &h, &d);
+#else
+		i += sscanf(head, "%d %d", &h, &d);
+#endif
+	    }
+	    else if (i == 2){
+#ifdef WIN32
+		i += sscanf_s(head, "%d", &d);
+#else
+		i += sscanf(head, "%d", &d);
+#endif
+	    }
+	}
+	
+	// Grab all the image data in one fell swoop.
+	image = (unsigned char*)malloc(sizeof(unsigned char) * w * h * 3);
+	fread(image, sizeof(unsigned char), w * h * 3, fp);
+	fclose(fp);
+	
+	*width = w;
+	*height = h;
+	return image;
+
+
+    }
+
 
     // Called by the scene to draw the object
     void LightedGeometry::init(std::map<std::string, GLuint>& shaderMap) {
         generateGeometry();
         calculateNormals();
 
-        m_vertexBuffers.resize(2);
+        std::cout << "Init with active shader = " << m_activeShader << std::endl;
+
+
+        m_vertexBuffers.resize(3);
         m_vertexArrays.resize(1);
 
-        glGenBuffers(2, &m_vertexBuffers[0]);
+        glGenBuffers(3, &m_vertexBuffers[0]);
         glGenVertexArrays( 1, &m_vertexArrays[0]);
 
         glBindVertexArray( m_vertexArrays[0] );
@@ -426,7 +499,8 @@ namespace dgfx {
         glEnableVertexAttribArray( vNormalLoc );
         glVertexAttribPointer( vNormalLoc, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
-
+        // Do texture-related initialization
+        textureInit();
 
         // Generate the model matrix.  We also need to apply it to our in-memory
         // vertex data for the sake of collision detection
@@ -458,6 +532,11 @@ namespace dgfx {
         glUniform4fv( shaderLoc, 1, m_diffuse );
         shaderLoc = glGetUniformLocation( m_activeShader, "Shininess" );
         glUniform1f( shaderLoc, m_shininess );
+
+        glUniform1i( glGetUniformLocation( m_activeShader, "EnableLighting" ), 1 );
+
+        // Texture-related draw commands
+        textureDraw();
 
         glDrawArrays( GL_TRIANGLES, 0, m_vertices.size() );
 
@@ -641,4 +720,66 @@ namespace dgfx {
         m_vertices.push_back( vec4( m_sideLength / 2, 0, -m_sideLength / 2, 1 ) ); // BR
         m_vertices.push_back( vec4( -m_sideLength / 2, 0,  m_sideLength / 2, 1 ) ); // TL
     }
+
+    TexturedLightedCube::TexturedLightedCube(float x, float y, float z) : LightedCube(x,y,z){}
+
+    void TexturedLightedCube::generateGeometry() {
+        LightedCube::generateGeometry();
+
+        // Do a basic plane mapping for each side
+        for (int i = 0; i < 6; i++ ) {
+            m_textureCoords.push_back( vec2(0,0) );
+            m_textureCoords.push_back( vec2(1,0) );
+            m_textureCoords.push_back( vec2(1,1) );
+
+            m_textureCoords.push_back( vec2(0,0) );
+            m_textureCoords.push_back( vec2(1,1) );
+            m_textureCoords.push_back( vec2(0,1) );
+        }
+
+
+    }
+
+    void TexturedLightedCube::textureInit() {
+        glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffers[2] );
+        glBufferData( GL_ARRAY_BUFFER, m_textureCoords.size() * sizeof(vec2), &m_textureCoords[0], GL_STATIC_DRAW );
+        GLuint vTexCoordLoc = glGetAttribLocation( m_activeShader, "vTexCoord" );
+        glEnableVertexAttribArray( vTexCoordLoc );
+        glVertexAttribPointer( vTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+        m_textureHandles.resize(1);
+        glGenTextures( 1, &m_textureHandles[0] );
+        int width = 512, height = 512;
+
+        GLubyte *image = (ppmRead("textures/crate_texture.ppm", &width, &height));
+        glBindTexture( GL_TEXTURE_2D, m_textureHandles[0] );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+
+
+
+
+    }
+
+    void TexturedLightedCube::textureDraw() {
+
+        glEnable( GL_TEXTURE_2D );
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, m_textureHandles[0] );
+    
+        glUniform1i( glGetAttribLocation( m_activeShader, "textureID" ), 0 );
+
+    }
+
+
+    void TexturedLightedCube::setShader( std::map<std::string, GLuint>& shaderMap ) {
+        m_activeShader = shaderMap[ A5Scene::FRAGMENT_TEXTURE_SHADER_NAME ];
+    }
+
+
+    void TexturedLightedCube::update(std::map<std::string, GLuint>& shaderMap){}
 }
+

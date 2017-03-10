@@ -77,10 +77,15 @@ namespace dgfx {
         vec4 m_ambient, m_diffuse, m_specular;
         std::vector<vec4> m_vertices;
         std::vector<vec3> m_normals;
+        std::vector<vec2> m_textureCoords;
+        std::vector<GLuint> m_textureHandles;
         float m_shininess;
         float m_yRot;
 
         GLuint m_activeShader;
+
+        // Read PPM image into texture
+        unsigned char * ppmRead(char* filename, int* width, int* height);
 
 
         // Called by the scene to draw the object
@@ -98,10 +103,13 @@ namespace dgfx {
 
         // Populate the vertex and normal vectors
         virtual void generateGeometry() = 0;
+        virtual void textureInit();
+        virtual void textureDraw();
         virtual void setShader( std::map<std::string, GLuint>& shaderMap ) = 0;
 
 
     };
+
 
     class LightedRecursiveSphere : public LightedGeometry {
     public:
@@ -145,8 +153,22 @@ namespace dgfx {
     public:
         LightedCube(float x, float y, float z);
     protected:
-        void generateGeometry();
+        virtual void generateGeometry();
         void makeQuad(GLubyte a, GLubyte b, GLubyte c, GLubyte d, vec4 *vertices);
+        virtual void setShader( std::map<std::string, GLuint>& shaderMap );
+
+    };
+
+    class TexturedLightedCube : public LightedCube {
+    public:
+        TexturedLightedCube(float x, float y, float z);
+        GLuint m_activeTextureHandle = 0;
+    protected:
+        // Set current active texture in GL
+        virtual void generateGeometry();
+        virtual void textureInit();
+        virtual void textureDraw();
+        virtual void update(std::map<std::string, GLuint>& shaderMap);
         virtual void setShader( std::map<std::string, GLuint>& shaderMap );
 
     };

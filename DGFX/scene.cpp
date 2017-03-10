@@ -406,10 +406,12 @@ namespace dgfx {
      // ----- A5 Scene -----
      const std::string A5Scene::VERTEX_LIGHTING_SHADER_NAME = "phong_sun_spot_vert";
      const std::string A5Scene::FRAGMENT_LIGHTING_SHADER_NAME = "phong_sun_spot_frag";
+     const std::string A5Scene::FRAGMENT_TEXTURE_SHADER_NAME = "phong_sun_spot_frag_tex";
      
      A5Scene::A5Scene() : Scene() {
         //addShader( VERTEX_LIGHTING_SHADER_NAME );
         addShader( FRAGMENT_LIGHTING_SHADER_NAME );
+        addShader( FRAGMENT_TEXTURE_SHADER_NAME );
 
         // Create cameras
         m_cameras.push_back( std::shared_ptr<Camera> ( new Camera (
@@ -509,38 +511,40 @@ namespace dgfx {
      }
 
      void A5Scene::displayCallback(){
-        GLuint mainShader = m_shaderMap[ A5Scene::FRAGMENT_LIGHTING_SHADER_NAME ];
+        for ( auto const &shader : m_shaderMap ) {
+            GLuint mainShader = shader.second;
 
-        // Set the view and projection uniforms
-        glUseProgram( mainShader );
-        GLuint mainProjMatrix = glGetUniformLocation( mainShader, "proj_matrix" );
-        glUniformMatrix4fv(mainProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
-        GLuint mainViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
-        glUniformMatrix4fv(mainViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
+            // Set the view and projection uniforms
+            glUseProgram( mainShader );
+            GLuint mainProjMatrix = glGetUniformLocation( mainShader, "proj_matrix" );
+            glUniformMatrix4fv(mainProjMatrix,1, GL_TRUE, m_activeCamera->m_projectionMatrix);
+            GLuint mainViewMatrix = glGetUniformLocation( mainShader, "view_matrix" );
+            glUniformMatrix4fv(mainViewMatrix,1, GL_TRUE, m_activeCamera->m_viewMatrix);
 
-        // Set the lighting uniforms for the directional light
-        GLuint shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightPosition" );
-        glUniform4fv( shaderLoc, 1, m_lights[0].m_position );
-        shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightAmbient" );
-        glUniform4fv( shaderLoc, 1, m_lights[0].m_ambient );
-        shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightDiffuse" );
-        glUniform4fv( shaderLoc, 1, m_lights[0].m_diffuse );
-        shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightSpecular" );
-        glUniform4fv( shaderLoc, 1, m_lights[0].m_specular );
-        shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightToggle" );
-        glUniform1i( shaderLoc, m_lights[0].m_toggle);
+            // Set the lighting uniforms for the directional light
+            GLuint shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightPosition" );
+            glUniform4fv( shaderLoc, 1, m_lights[0].m_position );
+            shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightAmbient" );
+            glUniform4fv( shaderLoc, 1, m_lights[0].m_ambient );
+            shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightDiffuse" );
+            glUniform4fv( shaderLoc, 1, m_lights[0].m_diffuse );
+            shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightSpecular" );
+            glUniform4fv( shaderLoc, 1, m_lights[0].m_specular );
+            shaderLoc = glGetUniformLocation( mainShader, "DirectionalLightToggle" );
+            glUniform1i( shaderLoc, m_lights[0].m_toggle);
 
-        // Set the lighting uniforms for the flash light
-        shaderLoc = glGetUniformLocation( mainShader, "FlashlightPosition" );
-        glUniform4fv( shaderLoc, 1, m_lights[1].m_position );
-        shaderLoc = glGetUniformLocation( mainShader, "FlashlightAmbient" );
-        glUniform4fv( shaderLoc, 1, m_lights[1].m_ambient );
-        shaderLoc = glGetUniformLocation( mainShader, "FlashlightDiffuse" );
-        glUniform4fv( shaderLoc, 1, m_lights[1].m_diffuse );
-        shaderLoc = glGetUniformLocation( mainShader, "FlashlightSpecular" );
-        glUniform4fv( shaderLoc, 1, m_lights[1].m_specular );
-        shaderLoc = glGetUniformLocation( mainShader, "FlashlightToggle" );
-        glUniform1i( shaderLoc, m_lights[1].m_toggle );
+            // Set the lighting uniforms for the flash light
+            shaderLoc = glGetUniformLocation( mainShader, "FlashlightPosition" );
+            glUniform4fv( shaderLoc, 1, m_lights[1].m_position );
+            shaderLoc = glGetUniformLocation( mainShader, "FlashlightAmbient" );
+            glUniform4fv( shaderLoc, 1, m_lights[1].m_ambient );
+            shaderLoc = glGetUniformLocation( mainShader, "FlashlightDiffuse" );
+            glUniform4fv( shaderLoc, 1, m_lights[1].m_diffuse );
+            shaderLoc = glGetUniformLocation( mainShader, "FlashlightSpecular" );
+            glUniform4fv( shaderLoc, 1, m_lights[1].m_specular );
+            shaderLoc = glGetUniformLocation( mainShader, "FlashlightToggle" );
+            glUniform1i( shaderLoc, m_lights[1].m_toggle );
+        }
 
         Scene::displayCallback();
 
