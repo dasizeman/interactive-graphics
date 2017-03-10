@@ -164,7 +164,6 @@ namespace dgfx {
         TexturedLightedCube(float x, float y, float z);
         GLuint m_activeTextureHandle = 0;
     protected:
-        // Set current active texture in GL
         virtual void generateGeometry();
         virtual void textureInit();
         virtual void textureDraw();
@@ -178,12 +177,20 @@ namespace dgfx {
         TexturedLightedPlane ( float x, float y, float z, float yrot, float zrot );
 
     protected:
-        // Set current active texture in GL
         virtual void generateGeometry();
         virtual void textureInit();
         virtual void textureDraw();
         virtual void setShader( std::map<std::string, GLuint>& shaderMap );
         virtual void keyboardHandler(unsigned char key, int x, int y);
+    };
+
+    class TexturedSkyPlane : public TexturedLightedPlane {
+    public:
+        TexturedSkyPlane ( float x, float y, float z, float yrot, float zrot );
+    protected:
+        virtual void textureInit();
+        virtual void textureDraw();
+
     };
     
 }

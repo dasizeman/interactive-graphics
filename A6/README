@@ -1,0 +1,37 @@
+Dave Sizer
+CS432 HW6
+
+In this assignment, I did the following:
+
+- Place a textured cube and a recursively built sphere on a textured ground
+  plane, and surround by a textured skybox
+
+- All objects are lit
+
+- All A5 features
+
+
+All controls are as specified in the assignment description.
+
+I have an included a precompiled MAC binary called Main in the A6 directory that you
+can run from the terminal on a Mac.  Clicking it won't work.
+
+$ cd A6
+$ ./Main
+
+NOTE: You may have to set the binary's execute bit first by running
+
+$ chmod +x Main
+
+To build, if desired, simply run
+
+$ ./build.sh 
+
+in the A6/ directory.  ( You may need to set its execute bit as well).
+
+
+To build for Mac (this is actually what I developed it on),
+you will probably need to install some packages with brew.  You should be able
+to build with Xcode, but I haven't tested this.  I recommend just running the
+binary.
+

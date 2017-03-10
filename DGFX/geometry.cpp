@@ -390,6 +390,9 @@ namespace dgfx {
         m_x(x),
         m_y(y),
         m_z(z){
+            m_xRot = 0;
+            m_yRot = 0;
+            m_zRot = 0;
             
             m_ambient = vec4( 1.0, 1.0, 0.0, 1.0 );
             m_diffuse = vec4( 1.0, 0.8, 0.0, 1.0 );
@@ -831,12 +834,12 @@ namespace dgfx {
 
         // Do a basic plane mapping for each side
         for (int i = 0; i < 6; i++ ) {
-            m_textureCoords.push_back( vec2(0,0) );
+            m_textureCoords.push_back( vec2(0,1) );
             m_textureCoords.push_back( vec2(1,0) );
-            m_textureCoords.push_back( vec2(1,1) );
-
             m_textureCoords.push_back( vec2(0,0) );
+
             m_textureCoords.push_back( vec2(1,1) );
+            m_textureCoords.push_back( vec2(1,0) );
             m_textureCoords.push_back( vec2(0,1) );
         }
 
@@ -880,6 +883,42 @@ namespace dgfx {
     }
 
     void TexturedLightedPlane::keyboardHandler(unsigned char key, int x, int y) {
+    }
+
+    // -----------------------------------------------
+    TexturedSkyPlane::TexturedSkyPlane( float x, float y, float z, float yrot, float zrot) :
+        TexturedLightedPlane(x,y,z,yrot,zrot) {}
+
+    void TexturedSkyPlane::textureInit() {
+        glBindBuffer( GL_ARRAY_BUFFER , m_vertexBuffers[2] );
+        glBufferData( GL_ARRAY_BUFFER, m_textureCoords.size() * sizeof(vec2), &m_textureCoords[0], GL_STATIC_DRAW );
+        GLuint vTexCoordLoc = glGetAttribLocation( m_activeShader, "vTexCoord" );
+        glEnableVertexAttribArray( vTexCoordLoc );
+        glVertexAttribPointer( vTexCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
+
+        m_textureHandles.resize(2);
+        glGenTextures( 2, &m_textureHandles[0] );
+        int width = 512, height = 512;
+
+        GLubyte *image = (ppmRead("textures/sky.ppm", &width, &height));
+        glBindTexture( GL_TEXTURE_2D, m_textureHandles[0] );
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+
+    }
+
+    void TexturedSkyPlane::textureDraw() {
+
+        glUniform1i( glGetUniformLocation( m_activeShader, "EnableLighting" ), 0 );
+        glEnable( GL_TEXTURE_2D );
+        glActiveTexture( GL_TEXTURE0 );
+        glBindTexture( GL_TEXTURE_2D, m_textureHandles[0] );
+
+        glUniform1i( glGetAttribLocation( m_activeShader, "textureID" ), 0 );
+
     }
 }
 

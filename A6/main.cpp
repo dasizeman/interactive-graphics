@@ -18,8 +18,16 @@ int main(int argc, char **argv) {
     Scene::m_instance = scene;
 
     scene->addEntity(std::unique_ptr<Entity>(new LightedRecursiveSphere(-2, 0.95, -4, 5)));
-    scene->addEntity(std::unique_ptr<Entity>(new TexturedLightedPlane(0, 0, 0, 0, 0)));
     scene->addEntity(std::unique_ptr<Entity>(new TexturedLightedCube(2, 0.5, -4)));
+
+    scene->addEntity(std::unique_ptr<Entity>(new TexturedLightedPlane(0, 0, 0, 0, 0)));
+
+
+    scene->addEntity(std::unique_ptr<Entity>(new TexturedSkyPlane(0, 50, 0, 0, 0)));
+    scene->addEntity(std::unique_ptr<Entity>(new TexturedSkyPlane(-25, 25, 0, 0, 90)));
+    scene->addEntity(std::unique_ptr<Entity>(new TexturedSkyPlane(25, 25, 0, 0, 90)));
+    scene->addEntity(std::unique_ptr<Entity>(new TexturedSkyPlane(0, 25, -25, 90, 90)));
+    scene->addEntity(std::unique_ptr<Entity>(new TexturedSkyPlane(0, 25, 25, 90, 90)));
 
 
     scene->start();
