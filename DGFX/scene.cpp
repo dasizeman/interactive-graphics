@@ -7,7 +7,7 @@
 
 namespace dgfx {
 
-    const std::string Scene::DEFAULT_WINDOW_NAME = "CS432";
+    const std::string Scene::DEFAULT_WINDOW_NAME = "Cool Sizer: Gotta Oops";
     const std::string Scene::SHADER_PATH = "shaders/";
     const int Scene::DEFAULT_WINDOW_WIDTH = 500, Scene::DEFAULT_WINDOW_HEIGHT = 500;
     const std::string Scene::FLAT_3D_SHADER_NAME = "3d_model";
