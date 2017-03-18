@@ -7,7 +7,7 @@
 
 namespace dgfx {
 
-    const std::string Scene::DEFAULT_WINDOW_NAME = "Cool Sizer: Gotta Oops";
+    const std::string Scene::DEFAULT_WINDOW_NAME = "CS432";
     const std::string Scene::SHADER_PATH = "shaders/";
     const int Scene::DEFAULT_WINDOW_WIDTH = 500, Scene::DEFAULT_WINDOW_HEIGHT = 500;
     const std::string Scene::FLAT_3D_SHADER_NAME = "3d_model";
@@ -41,6 +41,7 @@ namespace dgfx {
         glutMouseFunc( &Scene::click_callback_wrapper );
         glutKeyboardFunc( &Scene::keyboard_callback_wrapper );
         glutSpecialFunc( &Scene::special_key_wrapper );
+        glutReshapeFunc( &Scene::reshape_callback_wrapper );
         glutWMCloseFunc( &Scene::close_handler );
 
         // 100 fps!
@@ -134,6 +135,8 @@ namespace dgfx {
             entity->update( m_shaderMap );
     }
 
+    void Scene::reshapeCallback( int width, int height ){}
+
 
     void Scene::glewInitAndVersion(void)
     {
@@ -160,6 +163,10 @@ namespace dgfx {
         Scene::m_instance->timerCallback( value );
         glutTimerFunc( 1000/FPS, timer_callback_wrapper, 0 );
         glutPostRedisplay();
+     }
+
+     void Scene::reshape_callback_wrapper( int width, int height ) {
+        Scene::m_instance->reshapeCallback( width, height );
      }
 
      void Scene::keyboard_callback_wrapper(unsigned char key, int x, int y) {

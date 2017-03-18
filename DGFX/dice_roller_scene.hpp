@@ -4,7 +4,7 @@
 namespace dgfx {
 class DiceRollerScene : public Scene {
     public:
-        DiceRollerScene();
+        DiceRollerScene(std::string windowName, int width, int height);
     const static std::string FRAGMENT_LIGHTING_SHADER_NAME,
           VERTEX_LIGHTING_SHADER_NAME, FRAGMENT_TEXTURE_SHADER_NAME;
 
@@ -14,6 +14,10 @@ class DiceRollerScene : public Scene {
 	 void clickHandler(GLint button, GLint state, GLint x, GLint y);
 	 void displayCallback();
 	 void timerCallback( int value );
+         void reshapeCallback( int width, int height );
+
+         // Update the aspect ratios on all cameras
+         void updateCameraAspectRatios(int width, int height);
 };
 }
 #endif

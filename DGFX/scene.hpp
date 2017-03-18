@@ -44,6 +44,7 @@ namespace dgfx {
 
 	virtual void displayCallback();
 	virtual void timerCallback( int value );
+        virtual void reshapeCallback( int width, int height );
 
         void glewInitAndVersion(void);
 
@@ -63,7 +64,9 @@ namespace dgfx {
         static void click_callback_wrapper(GLint button, GLint state, GLint x, GLint y);
         static void display_callback_wrapper();
         static void timer_callback_wrapper( int value );
+        static void reshape_callback_wrapper( int width, int height );
         static void close_handler();
+
     };
 
 

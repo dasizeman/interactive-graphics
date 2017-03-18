@@ -8,7 +8,9 @@ namespace dgfx {
                     m_id( id ),
                     m_eye( eye ),
                     m_n( -at ),
-                    m_v( up ){
+                    m_v( up ),
+                    m_width(500),
+                    m_height(500){
         toggleProjectionMode();
         m_u = cross(m_v,m_n);
         m_u.w = 0;
@@ -17,11 +19,11 @@ namespace dgfx {
 
     void Camera::toggleProjectionMode() {
         // TODO maybe don't hardcode this
-        m_usePerspectiveProjection = !m_usePerspectiveProjection;
-        if ( m_usePerspectiveProjection )
-            usePerspectiveProjection( 65, 1, 1, 100 );
-        else
-            useOrthographicProjection( -1, 1, -1, 1, 1, 3 );
+        //m_usePerspectiveProjection = !m_usePerspectiveProjection;
+        //iif ( m_usePerspectiveProjection )
+            usePerspectiveProjection( 65, static_cast<float>(m_width)/m_height, 1, 100 );
+        //else
+           // useOrthographicProjection( -1, 1, -1, 1, 1, 3 );
     
     }
     void Camera::usePerspectiveProjection( float fovy, float aspect, float znear, float zfar ) {
@@ -39,6 +41,12 @@ namespace dgfx {
 
     void Camera::updateViewMatrix() {
         m_viewMatrix = LookAt( m_eye, m_eye- m_n, m_v );
+    }
+
+    void Camera::changeProjectionAspectRatio(int width, int height) {
+        m_width = width;
+        m_height = height;
+        toggleProjectionMode(); // Hack, to update projection matrix
     }
 
 

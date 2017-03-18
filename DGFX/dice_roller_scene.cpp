@@ -4,8 +4,8 @@ namespace dgfx {
      const std::string DiceRollerScene::FRAGMENT_LIGHTING_SHADER_NAME = "phong_sun_spot_frag";
      const std::string DiceRollerScene::FRAGMENT_TEXTURE_SHADER_NAME = "phong_sun_spot_frag_tex";
      
-     DiceRollerScene::DiceRollerScene() : Scene() {
-        //addShader( VERTEX_LIGHTING_SHADER_NAME );
+     DiceRollerScene::DiceRollerScene(std::string windowName, int width, int height) : 
+         Scene(windowName, width, height) {
         addShader( FRAGMENT_LIGHTING_SHADER_NAME );
         addShader( FRAGMENT_TEXTURE_SHADER_NAME );
 
@@ -17,6 +17,9 @@ namespace dgfx {
                     vec4( 0, 1, 0, 0 ) ) ) );
 
         m_activeCamera = m_cameras[0];
+
+        // Make sure the aspect ratio is correct
+        updateCameraAspectRatios( m_screenWidth, m_screenHeight );
 
         // Create the lights
         m_lights.push_back( Light(DIRECTIONAL, 
@@ -31,6 +34,12 @@ namespace dgfx {
                     vec4( 0.2, 0.2, 0.2, 1.0 ),
                     vec4( 1.0, 1.0, 1.0, 1.0 ),
                     vec4( 1.0, 1.0, 1.0, 1.0 )));
+     }
+
+     void DiceRollerScene::updateCameraAspectRatios(int width, int height) {
+        for (auto const camera : m_cameras) {
+            camera->changeProjectionAspectRatio(width, height);
+        }
      }
 
      void DiceRollerScene::keyboardHandler(unsigned char key, int x, int y) {
@@ -156,6 +165,11 @@ namespace dgfx {
          m_lights[1].m_position = m_activeCamera->m_eye;
          Scene::timerCallback( value );
 
+     }
+
+
+     void DiceRollerScene::reshapeCallback( int width, int height ) {
+        updateCameraAspectRatios( width, height );
      }
 
 

@@ -5,6 +5,7 @@ namespace dgfx {
 class Camera {
 
 private:
+    int m_width, m_height;
     bool m_usePerspectiveProjection = false;
     void updateViewMatrix();
 
@@ -21,6 +22,7 @@ public:
     void toggleProjectionMode();
     void usePerspectiveProjection( float fovy, float aspect, float znear, float zfar );
     void useOrthographicProjection( float left, float right, float bottom, float top, float near, float far );
+    void changeProjectionAspectRatio(int width, int height);
 
 
     void moveAlongAt( float amount );

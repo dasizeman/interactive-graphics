@@ -110,10 +110,4 @@ namespace dgfx {
         m_activeShader = shaderMap[ DiceRollerScene::FRAGMENT_TEXTURE_SHADER_NAME ];
     }
 
-    void Cube::keyboardHandler(unsigned char key, int x, int y) {
-        if (key == 't' )
-            m_activeTextureHandle = !m_activeTextureHandle;
-
-    }
-
 }
