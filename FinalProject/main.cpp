@@ -21,7 +21,9 @@ int main(int argc, char **argv) {
     Scene::m_instance = scene;
 
     scene->addEntity(std::unique_ptr<Entity>(new Plane(0, 0, 0, 0,0, 0, 100)));
-    scene->addEntity(std::unique_ptr<Entity>(new Cube(2, 0.5, -4, 0, 0, 0)));
+    for (float y = 0.5; y < 5.5; y++)
+        for (float x = -2; x <= 2; x++)
+            scene->addEntity(std::unique_ptr<Entity>(new Cube(x, y, -4, 0, 0, 0)));
 
 
     scene->start();

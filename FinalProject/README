@@ -1,0 +1,17 @@
+Still needs doing:
+
+Convert cube textures to use a cube map (like the skybox), and pass a texture
+name to the constructor
+
+All other project stuff
+
+
+What works now:
+
+Planes and cubes with textures from A6
+
+Everything else from A6
+
+Picking (calls object's wasPicked() method)
+
+Objects "die" and are removed from the scene when picked

@@ -10,8 +10,6 @@ namespace dgfx {
     const std::string Scene::DEFAULT_WINDOW_NAME = "CS432";
     const std::string Scene::SHADER_PATH = "shaders/";
     const int Scene::DEFAULT_WINDOW_WIDTH = 500, Scene::DEFAULT_WINDOW_HEIGHT = 500;
-    const std::string Scene::FLAT_3D_SHADER_NAME = "3d_model";
-    const std::string Scene::WIREFRAME_SHADER_NAME = "3d_wireframe";
 
     std::shared_ptr<Scene> Scene::m_instance = nullptr;
     
@@ -46,11 +44,6 @@ namespace dgfx {
 
         // 100 fps!
         glutTimerFunc( 1000, timer_callback_wrapper, 0);
-
-        // Load the global 3D shaders
-        // TODO handle this differently; they aren't always needed
-        addShader( FLAT_3D_SHADER_NAME );
-        addShader( WIREFRAME_SHADER_NAME );
 
 
         glEnable (GL_DEPTH_TEST);
@@ -95,6 +88,16 @@ namespace dgfx {
             entity->m_doAnimation = m_doAnimation;
     }
 
+    void Scene:: removeDead() {
+        m_entities.erase( std::remove_if(
+                    m_entities.begin(),
+                    m_entities.end(),
+                    [] (const std::unique_ptr<Entity> &entity) {
+                        return !entity->m_alive; 
+                    }),
+                m_entities.end());
+    }
+
     void Scene::keyboardHandler(unsigned char key, int x, int y) {
         switch( key ) {
         case 033:  // Escape key
@@ -131,6 +134,8 @@ namespace dgfx {
     }
 
     void Scene::timerCallback( int value ) {
+        // Remove any dead things
+        removeDead();
         for ( std::unique_ptr<Entity>& entity : m_entities )
             entity->update( m_shaderMap );
     }

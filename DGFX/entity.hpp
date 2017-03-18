@@ -3,10 +3,13 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 
 #include "Angel.h"
+#include "scene.hpp"
 
 namespace dgfx {
+class Scene;
 class Entity {
     friend class Scene;
 
@@ -14,7 +17,8 @@ protected:
     std::vector<GLuint> m_vertexBuffers, m_vertexArrays;
     std::vector<std::string>  m_shaderNames;
     bool m_doAnimation = false;
-    
+    bool m_alive = true;
+
 	
     // Called by the scene to set up GL data structures
     virtual void init(std::map<std::string, GLuint>& shaderMap) = 0;

@@ -203,5 +203,8 @@ namespace dgfx {
 
     void Object::specialKeyHandler(int key, int x, int y){}
 
+    // Object picking
+    void Object::wasPicked( uint16_t triangleIdx ){}
+
 
 }

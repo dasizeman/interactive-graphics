@@ -1,11 +1,15 @@
 #ifndef __OBJECT_H__
 #define  __OBJECT_H__
 #include "entity.hpp"
+#include "scene.hpp"
 namespace dgfx {
 class Object : public Entity {
+    friend class DiceRollerScene;
     public:
         Object(float x, float y, float z, float xrot, float yrot, float zrot);
     protected:
+
+
         float m_x, m_y, m_z;
         vec4 m_ambient, m_diffuse, m_specular;
         std::vector<vec4> m_vertices;
@@ -39,6 +43,11 @@ class Object : public Entity {
         virtual void textureInit() = 0;
         virtual void textureDraw() = 0;
         virtual void setShader( std::map<std::string, GLuint>& shaderMap ) = 0;
+
+        // Called if a click of this object was detected using picking
+        // The argument is the index into m_vertices of the face that was
+        // clicked on
+        virtual void wasPicked( uint16_t triangleIdx );
 };
 }
 #endif

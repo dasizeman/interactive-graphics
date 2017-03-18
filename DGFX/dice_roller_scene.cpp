@@ -1,12 +1,13 @@
+#include <cassert>
+
 #include "dice_roller_scene.hpp"
+#include "object.hpp"
+#include "daveutils.hpp"
 namespace dgfx {
-     const std::string DiceRollerScene::VERTEX_LIGHTING_SHADER_NAME = "phong_sun_spot_vert";
-     const std::string DiceRollerScene::FRAGMENT_LIGHTING_SHADER_NAME = "phong_sun_spot_frag";
      const std::string DiceRollerScene::FRAGMENT_TEXTURE_SHADER_NAME = "phong_sun_spot_frag_tex";
      
      DiceRollerScene::DiceRollerScene(std::string windowName, int width, int height) : 
          Scene(windowName, width, height) {
-        addShader( FRAGMENT_LIGHTING_SHADER_NAME );
         addShader( FRAGMENT_TEXTURE_SHADER_NAME );
 
         // Create cameras
@@ -89,7 +90,14 @@ namespace dgfx {
      }
 
 
-     void DiceRollerScene::clickHandler(GLint button, GLint state, GLint x, GLint y){}
+     void DiceRollerScene::clickHandler(GLint button, GLint state, GLint x, GLint y){
+         if (! (m_activeCamera->m_id == 0 &&
+                button == GLUT_LEFT_BUTTON &&
+                state == GLUT_DOWN ))
+             return;
+
+         pickTriangle( x, y );
+     }
      
      void DiceRollerScene::specialKeyHandler(int key, int x, int y) {
          Scene::specialKeyHandler( key, x, y );
@@ -171,6 +179,95 @@ namespace dgfx {
      void DiceRollerScene::reshapeCallback( int width, int height ) {
         updateCameraAspectRatios( width, height );
      }
+
+     void DiceRollerScene::pickTriangle( uint16_t x, uint16_t y ) {
+         float xFloat = static_cast<float>(x);
+         float yFloat = static_cast<float>(y);
+
+         // First we calculate where the clicked point is on the front of the
+         // canonical view volume
+         vec4 canonicalPt ( 2 * (xFloat / m_screenWidth) - 1,
+                            1 - 2 * (yFloat / m_screenHeight),
+                            -1,
+                            1 );
+
+         // Now we undo the perspective projection
+         float t = m_activeCamera->m_near * tan( ((M_PI / 180)  * m_activeCamera->m_fov) / 2) ;
+         float r = t * m_activeCamera->m_aspect;
+
+         vec4 noPerspective ( r * canonicalPt.x,
+                              t * canonicalPt.y,
+                              -m_activeCamera->m_near,
+                              1 );
+
+         // Now we need to get from camera coordinates to world coordinates by
+         // creating and multiplying by the inverse of camera coord system
+         mat4 viewInverse = m_activeCamera->viewInverse();
+
+         vec4 worldPt = viewInverse * noPerspective;
+
+         // Now we can get the click ray in world coordinates
+         vec3 worldRay = daveutils::FourDto3d( worldPt - m_activeCamera->m_eye );
+
+         // We now go through every triangle in the scene to see if our ray
+         // intersects it
+         for ( std::unique_ptr<Entity> &entity : m_entities ) {
+             // This is a relic of the old codebase; we won't have any entities
+             // in this project that aren't of class Object, but I'm too lazy to
+             // refactor
+            Object *object = dynamic_cast<Object*>( entity.get() );
+
+            // But just in case...
+            assert( object != nullptr );
+
+            // Make sure we only call the event for the first face we hit
+            bool hit = false;
+
+             for ( uint16_t triangleIdx = 0; triangleIdx < object->m_vertices.size(); triangleIdx += 3 ) {
+                 vec3 E = daveutils::FourDto3d( object->m_vertices[ triangleIdx ] );
+                 vec3 F = daveutils::FourDto3d( object->m_vertices[ triangleIdx + 1 ] );
+                 vec3 G = daveutils::FourDto3d( object->m_vertices[ triangleIdx + 2 ] );
+
+                 float t = rayIntersectsPlane( worldRay, E, F, G );
+                 if ( t > 0) {
+                    vec3 intersectPt = daveutils::FourDto3d( m_activeCamera->m_eye ) + t * worldRay;
+                    if ( insideTest( E, F, G, intersectPt ) ) {
+                        object->wasPicked( triangleIdx );
+                        hit = true;
+                        break;
+                    }
+                 }
+
+             }
+
+         }
+
+     }
+
+
+     float DiceRollerScene::rayIntersectsPlane( vec3 ray, vec3 e, vec3 f, vec3 g ) {
+         vec3 N = cross( (f - e), (g - e) );
+         vec3 O = daveutils::FourDto3d( m_activeCamera->m_eye );
+         vec3 D = ray;
+         float d = dot( -e, N );
+
+         return - ( dot(N, O) + d ) / dot(N,D);
+
+     }
+
+
+     bool DiceRollerScene::insideTest( vec3 e, vec3 f, vec3 g, vec3 point ) {
+         vec3 N = cross( (f - e), (g - e) );
+         float dot1 = dot( cross( f - e, point - e ), N );
+         float dot2 = dot( cross( g - f, point - f ), N );
+         float dot3 = dot( cross( e - g, point - g ), N );
+
+         //std::cout << dot1 << "," << dot2 << "," << dot3 << std::endl;
+
+         return dot1 >= 0 && dot2 >= 0 && dot3 >= 0;
+
+     }
+
 
 
 }

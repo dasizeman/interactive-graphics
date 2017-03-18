@@ -12,6 +12,7 @@ class Cube : public Object {
         virtual void textureInit();
         virtual void textureDraw();
         virtual void setShader( std::map<std::string, GLuint>& shaderMap );
+        virtual void wasPicked( uint16_t triangleIdx );
 };
 }
 #endif

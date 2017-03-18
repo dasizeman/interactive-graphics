@@ -10,14 +10,14 @@
 #include "entity.hpp"
 #include "camera.hpp"
 #include "light.hpp"
+#include "entity.hpp"
 
 #define FPS 100
 
 namespace dgfx {
+    class Entity;
     class Scene {
     public:
-        const static std::string FLAT_3D_SHADER_NAME;
-        const static std::string WIREFRAME_SHADER_NAME;
         static std::shared_ptr<Scene> m_instance;
     protected:
         std::vector<std::shared_ptr<Camera>> m_cameras;
@@ -58,6 +58,8 @@ namespace dgfx {
         void addEntity(std::unique_ptr<Entity> entity);
         void start();
         void globalAnimationToggle();
+         // Remove dead things from the scene
+         void removeDead();
 
         static void keyboard_callback_wrapper(unsigned char key, int x, int y);
         static void special_key_wrapper(int key, int x, int y);

@@ -109,5 +109,12 @@ namespace dgfx {
     void Cube::setShader( std::map<std::string, GLuint>& shaderMap ) {
         m_activeShader = shaderMap[ DiceRollerScene::FRAGMENT_TEXTURE_SHADER_NAME ];
     }
+    
+    void Cube::wasPicked( uint16_t triangleIdx ) {
+        std::cout << "A cube was picked, triangle " << triangleIdx << std::endl; 
+
+        // kys
+        m_alive = false;
+    }
 
 }
